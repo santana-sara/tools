@@ -1,0 +1,1813 @@
+mta-tool 
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTA Planner — DP6</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & BASE ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Brand */
+  --navy: #0B1D3A;
+  --navy-mid: #132847;
+  --blue: #1B4FD8;
+  --blue-hover: #1540B0;
+  --blue-light: #EBF2FF;
+  --blue-border: #BFCFFA;
+
+  /* Role colors */
+  --de: #0369A1;
+  --de-bg: #F0F9FF;
+  --de-border: #BAE6FD;
+  --de-dark: #075985;
+  --ds: #6D28D9;
+  --ds-bg: #F5F3FF;
+  --ds-border: #C4B5FD;
+  --ba: #047857;
+  --ba-bg: #ECFDF5;
+  --ba-border: #6EE7B7;
+
+  /* Feedback */
+  --warn: #92400E;
+  --warn-bg: #FFFBEB;
+  --warn-border: #FCD34D;
+  --danger: #991B1B;
+  --danger-bg: #FEF2F2;
+  --danger-border: #FCA5A5;
+  --success: #065F46;
+  --success-bg: #ECFDF5;
+  --success-border: #6EE7B7;
+
+  /* Neutrals */
+  --bg: #F4F6FA;
+  --surface: #FFFFFF;
+  --surface-2: #F8FAFD;
+  --border: #E3E8F0;
+  --border-2: #CBD5E1;
+  --text: #0D1829;
+  --text-2: #3D5068;
+  --text-3: #8A9BB0;
+
+  /* Effects */
+  --shadow-sm: 0 1px 3px rgba(11,29,58,.06), 0 1px 8px rgba(11,29,58,.04);
+  --shadow: 0 2px 8px rgba(11,29,58,.08), 0 4px 24px rgba(11,29,58,.05);
+  --shadow-lg: 0 8px 40px rgba(11,29,58,.12);
+
+  --r: 10px;
+  --r-sm: 7px;
+  --r-lg: 14px;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+.app-header {
+  background: var(--navy);
+  height: 58px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 0 rgba(255,255,255,.06);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo-mark {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--blue) 0%, #4F8AFF 100%);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(27,79,216,.4);
+}
+.logo-text {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -.2px;
+}
+.logo-divider {
+  width: 1px; height: 18px;
+  background: rgba(255,255,255,.15);
+}
+.logo-sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,.45);
+  letter-spacing: .3px;
+}
+
+.header-center {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.project-pill {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.8);
+  letter-spacing: .2px;
+  transition: all .15s;
+}
+
+.role-switcher {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+.role-btn {
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,.4);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all .15s;
+  letter-spacing: .4px;
+}
+.role-btn:hover:not(.r-active) { color: rgba(255,255,255,.7); background: rgba(255,255,255,.06); }
+.role-btn.r-active { color: #fff; }
+.role-btn.r-active.rde { background: var(--de); }
+.role-btn.r-active.rds { background: var(--ds); }
+.role-btn.r-active.rba { background: var(--ba); }
+
+/* ══════════════════════════════════════════
+   STAGE PROGRESS BAR
+══════════════════════════════════════════ */
+.stages-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex;
+  height: 60px;
+  align-items: stretch;
+  box-shadow: var(--shadow-sm);
+}
+.stage-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 0 16px 0 0;
+  cursor: pointer;
+  position: relative;
+  transition: opacity .15s;
+  opacity: .5;
+  user-select: none;
+}
+.stage-step:first-child { padding-left: 0; }
+.stage-step:hover { opacity: .8; }
+.stage-step.ss-active { opacity: 1; }
+.stage-step.ss-done { opacity: .7; }
+.stage-step.ss-active::after,
+.stage-step.ss-done::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 16px;
+  height: 2.5px;
+  border-radius: 2px 2px 0 0;
+}
+.stage-step.ss-active::after { background: var(--blue); }
+.stage-step.ss-done::after { background: var(--ba); }
+.ss-bubble {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--border-2);
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+  color: var(--text-3);
+  flex-shrink: 0;
+  transition: all .2s;
+}
+.stage-step.ss-active .ss-bubble {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(27,79,216,.15);
+}
+.stage-step.ss-done .ss-bubble {
+  background: var(--ba-bg);
+  border-color: var(--ba);
+  color: var(--ba);
+}
+.ss-info { min-width: 0; }
+.ss-num { font-size: 10px; font-weight: 600; color: var(--text-3); letter-spacing: .4px; text-transform: uppercase; }
+.ss-name { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stage-step.ss-active .ss-name { color: var(--blue); }
+.ss-sep { width: 1px; background: var(--border); margin: 16px 0; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════ */
+.page-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  padding: 22px 28px;
+  max-width: 1220px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* ══════════════════════════════════════════
+   CARDS / PANELS
+══════════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow .15s;
+}
+.card:hover { box-shadow: var(--shadow); }
+
+.card-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title-icon {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  background: var(--blue-light);
+}
+.card-desc { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.card-body { padding: 18px 20px; }
+.card-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.card-section:last-child { border-bottom: none; }
+.card-section-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+.card-footer {
+  padding: 11px 18px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ══════════════════════════════════════════
+   ROLE BADGES & TAGS
+══════════════════════════════════════════ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 800;
+  padding: 2px 8px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: .4px;
+}
+.badge-de { background: var(--de-bg); color: var(--de); border: 1px solid var(--de-border); }
+.badge-ds { background: var(--ds-bg); color: var(--ds); border: 1px solid var(--ds-border); }
+.badge-ba { background: var(--ba-bg); color: var(--ba); border: 1px solid var(--ba-border); }
+.badge-all { background: var(--bg); color: var(--text-2); border: 1px solid var(--border); }
+.badge-auto {
+  background: linear-gradient(135deg, #1B4FD8, #6D28D9);
+  color: #fff;
+  border: none;
+  font-size: 9px;
+}
+
+/* ══════════════════════════════════════════
+   FORMS
+══════════════════════════════════════════ */
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field + .field { margin-top: 14px; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.field-label {
+  font-size: 12px; font-weight: 700;
+  color: var(--text-2);
+  display: flex; align-items: center; gap: 6px;
+}
+.field-label .req { color: var(--danger); }
+.field-label .hint { font-weight: 400; color: var(--text-3); }
+input[type=text], select, textarea {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; font-weight: 500;
+  padding: 8px 11px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  width: 100%;
+}
+input[type=text]:focus, select:focus, textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(27,79,216,.1);
+}
+input[type=text]::placeholder { color: var(--text-3); font-weight: 400; }
+select { cursor: pointer; }
+textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
+
+/* ══════════════════════════════════════════
+   CHIPS
+══════════════════════════════════════════ */
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--text-2);
+  user-select: none;
+  transition: all .12s;
+  line-height: 1;
+}
+.chip:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+.chip.on {
+  background: var(--blue-light);
+  border-color: var(--blue-border);
+  color: var(--blue);
+  box-shadow: 0 0 0 1px rgba(27,79,216,.12);
+}
+
+/* ══════════════════════════════════════════
+   CHECKLIST
+══════════════════════════════════════════ */
+.checklist { display: flex; flex-direction: column; }
+.check-row {
+  display: flex; align-items: flex-start; gap: 11px;
+  padding: 11px 18px;
+  cursor: pointer;
+  transition: background .1s;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.check-row:last-child { border-bottom: none; }
+.check-row:hover { background: var(--surface-2); }
+.check-row.checked { background: var(--success-bg); }
+.check-row.auto-de { border-left: 3px solid var(--de); }
+.check-row.auto-ds { border-left: 3px solid var(--ds); }
+.check-row.auto-ba { border-left: 3px solid var(--ba); }
+.check-row.crit { border-left: 3px solid var(--danger); }
+.chkbox {
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  border: 2px solid var(--border-2);
+  flex-shrink: 0; margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: transparent;
+  background: var(--surface);
+  transition: all .12s;
+}
+.check-row.checked .chkbox {
+  background: var(--ba);
+  border-color: var(--ba);
+  color: #fff;
+}
+.check-text { font-size: 13px; color: var(--text); line-height: 1.45; flex: 1; }
+.check-row.checked .check-text { color: var(--text-3); text-decoration: line-through; }
+.check-meta {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 4px; font-size: 11px; color: var(--text-3);
+}
+
+/* ══════════════════════════════════════════
+   ALERTS
+══════════════════════════════════════════ */
+.alert {
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  font-size: 12px; line-height: 1.55;
+  animation: fadeUp .25s ease;
+}
+.alert-title { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+.alert-body { opacity: .88; }
+.alert-info { background: var(--blue-light); border-color: var(--blue-border); color: #1e3a8a; }
+.alert-warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn); }
+.alert-danger { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger); }
+.alert-success { background: var(--success-bg); border-color: var(--success-border); color: var(--success); }
+.alert-de { background: var(--de-bg); border-color: var(--de-border); color: var(--de-dark); }
+
+/* ══════════════════════════════════════════
+   RISK CARDS
+══════════════════════════════════════════ */
+.risk-card {
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin-bottom: 8px;
+  transition: box-shadow .15s;
+}
+.risk-card:hover { box-shadow: var(--shadow-sm); }
+.risk-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  background: var(--surface);
+  transition: background .1s;
+}
+.risk-head:hover { background: var(--surface-2); }
+.risk-level {
+  font-size: 9px; font-weight: 800;
+  padding: 2px 7px; border-radius: 3px;
+  text-transform: uppercase; letter-spacing: .5px;
+  flex-shrink: 0;
+}
+.rl-high { background: var(--danger); color: #fff; }
+.rl-med { background: var(--warn-border); color: var(--warn); border: 1px solid currentColor; }
+.risk-title { font-size: 12px; font-weight: 700; flex: 1; color: var(--text); }
+.risk-chevron { color: var(--text-3); font-size: 11px; transition: transform .2s; }
+.risk-head.open .risk-chevron { transform: rotate(180deg); }
+.risk-body {
+  display: none;
+  padding: 11px 14px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  font-size: 12px; color: var(--text-2); line-height: 1.55;
+}
+.risk-body.visible { display: block; }
+.risk-action { margin-top: 7px; font-weight: 700; color: var(--de); font-size: 11px; }
+
+/* ══════════════════════════════════════════
+   QUERY BLOCKS
+══════════════════════════════════════════ */
+.query-block {
+  border: 1px solid var(--de-border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.query-head {
+  padding: 10px 14px;
+  background: var(--de-bg);
+  border-bottom: 1px solid var(--de-border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+}
+.query-head-info { flex: 1; }
+.query-name { font-size: 12px; font-weight: 800; color: var(--de); }
+.query-desc { font-size: 10px; color: var(--de); opacity: .7; margin-top: 1px; }
+.query-copy-btn {
+  font-size: 10px; font-weight: 700;
+  padding: 3px 9px;
+  border: 1px solid var(--de-border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--de);
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all .12s;
+  white-space: nowrap; flex-shrink: 0;
+}
+.query-copy-btn:hover { background: var(--de-bg); }
+.query-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 13px 15px;
+  background: #0D1B3A;
+  color: #94A3B8;
+  line-height: 1.75;
+  overflow-x: auto;
+  white-space: pre;
+}
+.kw { color: #7DD3FC; }
+.fn { color: #C084FC; }
+.str { color: #86EFAC; }
+.cm { color: #3D5068; font-style: italic; }
+.num { color: #FCA5A5; }
+.op { color: #F472B6; }
+
+/* ══════════════════════════════════════════
+   MODEL OPTIONS
+══════════════════════════════════════════ */
+.model-opt {
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 13px 15px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: all .12s;
+  position: relative;
+}
+.model-opt:hover { border-color: var(--blue); background: var(--blue-light); }
+.model-opt.selected { border-color: var(--blue); background: var(--blue-light); }
+.model-opt-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.model-name { font-size: 13px; font-weight: 800; color: var(--text); }
+.model-opt.selected .model-name { color: var(--blue); }
+.model-rec {
+  font-size: 9px; font-weight: 800;
+  background: var(--ba);
+  color: #fff;
+  padding: 2px 7px; border-radius: 3px;
+  text-transform: uppercase; letter-spacing: .4px;
+}
+.model-desc { font-size: 12px; color: var(--text-2); }
+.model-opt.selected .model-desc { color: #1e3a8a; }
+
+/* ══════════════════════════════════════════
+   CHANNEL TABLE
+══════════════════════════════════════════ */
+.ch-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ch-table thead th {
+  text-align: left;
+  padding: 8px 12px;
+  background: var(--navy);
+  color: rgba(255,255,255,.85);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .3px;
+}
+.ch-table thead th:first-child { border-radius: 8px 0 0 0; }
+.ch-table thead th:last-child { border-radius: 0 8px 0 0; }
+.ch-table tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text-2); }
+.ch-table tbody tr:last-child td { border-bottom: none; }
+.ch-table tbody tr:nth-child(even) td { background: var(--surface-2); }
+.ch-table tbody tr:hover td { background: var(--blue-light); }
+.ch-name { font-weight: 700; color: var(--text); }
+.ch-code { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--de); }
+
+/* ══════════════════════════════════════════
+   SIDEBAR RIGHT
+══════════════════════════════════════════ */
+.sidebar-right { display: flex; flex-direction: column; gap: 14px; }
+
+/* Lookback card */
+.lw-card {
+  background: var(--navy);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.lw-card::before {
+  content: '';
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  background: rgba(27,79,216,.3);
+}
+.lw-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: rgba(255,255,255,.4); margin-bottom: 6px; }
+.lw-val { font-size: 40px; font-weight: 800; color: #fff; line-height: 1; }
+.lw-unit { font-size: 14px; font-weight: 500; color: rgba(255,255,255,.5); margin-left: 4px; }
+.lw-sub { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 4px; }
+.lw-range {
+  margin-top: 12px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,.07);
+  border-radius: 6px;
+  font-size: 11px;
+  color: rgba(255,255,255,.6);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.5;
+}
+.lw-de-note { font-size: 10px; color: #7DD3FC; margin-top: 6px; font-weight: 600; }
+
+/* Summary mini cards */
+.mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mini-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 11px 13px;
+  box-shadow: var(--shadow-sm);
+}
+.mini-val { font-size: 22px; font-weight: 800; line-height: 1; margin-bottom: 3px; }
+.mini-val.blue { color: var(--blue); }
+.mini-val.green { color: var(--ba); }
+.mini-val.warn { color: var(--warn); }
+.mini-val.danger { color: var(--danger); }
+.mini-label { font-size: 10px; color: var(--text-3); font-weight: 600; }
+
+/* Alerts stack */
+.alerts-stack { display: flex; flex-direction: column; gap: 8px; }
+
+/* ══════════════════════════════════════════
+   STAGE HEADER
+══════════════════════════════════════════ */
+.stage-header {
+  display: flex; align-items: flex-start; gap: 14px;
+  margin-bottom: 20px;
+}
+.stage-icon-wrap {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(27,79,216,.3);
+  flex-shrink: 0;
+}
+.stage-h-title { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -.3px; }
+.stage-h-desc { font-size: 13px; color: var(--text-2); margin-top: 3px; }
+.auto-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 800;
+  background: linear-gradient(135deg, var(--blue), var(--ds));
+  color: #fff;
+  padding: 3px 9px; border-radius: 20px;
+  margin-top: 6px;
+}
+
+/* ══════════════════════════════════════════
+   FOOTER ACTIONS
+══════════════════════════════════════════ */
+.stage-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+}
+.actions-left { display: flex; align-items: center; gap: 12px; }
+.progress-wrap { display: flex; align-items: center; gap: 10px; }
+.progress-track { width: 100px; height: 5px; background: var(--border); border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 10px; background: var(--blue); transition: width .3s ease; }
+.progress-fill.done { background: var(--ba); }
+.progress-label { font-size: 11px; color: var(--text-2); font-weight: 600; white-space: nowrap; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 18px;
+  border-radius: var(--r-sm);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer; border: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all .15s;
+  letter-spacing: -.1px;
+}
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(27,79,216,.3);
+}
+.btn-primary:hover { background: var(--blue-hover); box-shadow: 0 4px 14px rgba(27,79,216,.35); transform: translateY(-1px); }
+.btn-ghost {
+  background: var(--surface);
+  color: var(--text-2);
+  border: 1.5px solid var(--border);
+}
+.btn-ghost:hover { background: var(--surface-2); border-color: var(--border-2); }
+
+/* ══════════════════════════════════════════
+   QUESTION LIST
+══════════════════════════════════════════ */
+.q-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.q-row:last-child { border-bottom: none; }
+.q-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--blue-light);
+  border: 1.5px solid var(--blue-border);
+  font-size: 10px; font-weight: 800;
+  color: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.q-input {
+  flex: 1;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 13px;
+  color: var(--text);
+}
+.q-input:focus { border: none !important; box-shadow: none !important; }
+
+/* ══════════════════════════════════════════
+   STAGE VISIBILITY
+══════════════════════════════════════════ */
+.stage-view { display: none; }
+.stage-view.sv-active { display: contents; }
+
+/* Role visibility */
+.de-panel, .ds-panel, .ba-panel { display: none; }
+[data-role=de] .de-panel { display: block; }
+[data-role=ds] .ds-panel { display: block; }
+[data-role=ba] .ba-panel { display: block; }
+
+/* ══════════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.fade-up { animation: fadeUp .22s ease forwards; }
+.slide-in { animation: slideIn .22s ease forwards; }
+
+/* stagger */
+.card:nth-child(1) { animation: fadeUp .2s ease both; }
+.card:nth-child(2) { animation: fadeUp .2s .06s ease both; }
+.card:nth-child(3) { animation: fadeUp .2s .12s ease both; }
+
+/* ══════════════════════════════════════════
+   MISC
+══════════════════════════════════════════ */
+.divider { height: 1px; background: var(--border); margin: 6px 0; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.hidden { display: none !important; }
+</style>
+</head>
+<body data-role="de">
+
+<!-- ══════════ HEADER ══════════ -->
+<header class="app-header">
+  <div class="logo">
+    <div class="logo-mark">📊</div>
+    <span class="logo-text">MTA Planner</span>
+    <div class="logo-divider"></div>
+    <span class="logo-sub">DP6</span>
+  </div>
+
+  <div class="header-center">
+    <div class="project-pill" id="hdr-project">📋 Novo Projeto</div>
+  </div>
+
+  <div class="role-switcher">
+    <button class="role-btn rde r-active" id="rb-de" onclick="setRole('de')">DE</button>
+    <button class="role-btn rds" id="rb-ds" onclick="setRole('ds')">DS</button>
+    <button class="role-btn rba" id="rb-ba" onclick="setRole('ba')">BA</button>
+  </div>
+</header>
+
+<!-- ══════════ STAGES BAR ══════════ -->
+<div class="stages-bar">
+  <div class="stage-step ss-active" id="ss-1" onclick="goTo(1)">
+    <div class="ss-bubble" id="sb-1">1</div>
+    <div class="ss-info">
+      <div class="ss-num">Etapa 1</div>
+      <div class="ss-name">Entrevistas</div>
+    </div>
+  </div>
+  <div class="ss-sep"></div>
+  <div class="stage-step" id="ss-2" onclick="goTo(2)">
+    <div class="ss-bubble" id="sb-2">2</div>
+    <div class="ss-info">
+      <div class="ss-num">Etapa 2</div>
+      <div class="ss-name">Mapeamento</div>
+    </div>
+  </div>
+  <div class="ss-sep"></div>
+  <div class="stage-step" id="ss-3" onclick="goTo(3)">
+    <div class="ss-bubble" id="sb-3">3</div>
+    <div class="ss-info">
+      <div class="ss-num">Etapa 3</div>
+      <div class="ss-name">Diagnóstico</div>
+    </div>
+  </div>
+  <div class="ss-sep"></div>
+  <div class="stage-step" id="ss-4" onclick="goTo(4)">
+    <div class="ss-bubble" id="sb-4">4</div>
+    <div class="ss-info">
+      <div class="ss-num">Etapa 4</div>
+      <div class="ss-name">Construção</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ETAPA 1 — ENTREVISTAS
+══════════════════════════════════════════ -->
+<div class="stage-view sv-active" id="view-1">
+<div class="page-layout">
+
+  <!-- MAIN -->
+  <div class="stack">
+
+    <!-- Stage header -->
+    <div class="stage-header">
+      <div class="stage-icon-wrap">🎙️</div>
+      <div>
+        <div class="stage-h-title">Entrevistas</div>
+        <div class="stage-h-desc">Capture o contexto de negócio, mídias e objetivos. As respostas alimentam automaticamente as etapas seguintes.</div>
+      </div>
+    </div>
+
+    <!-- Negócio -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">
+            <div class="card-title-icon">🏢</div>
+            Contexto de Negócio
+          </div>
+          <div class="card-desc">Informações base sobre o cliente e os objetivos do projeto</div>
+        </div>
+        <span class="badge badge-all">Todos</span>
+      </div>
+
+      <div class="card-section">
+        <div class="field-grid">
+          <div class="field">
+            <div class="field-label">Cliente <span class="req">*</span></div>
+            <input type="text" id="f-cliente" placeholder="Nome do cliente" oninput="onInput()">
+          </div>
+          <div class="field">
+            <div class="field-label">Produto / Serviço principal</div>
+            <input type="text" id="f-produto" placeholder="Ex: Abertura de conta digital" oninput="onInput()">
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <div class="field-label">Objetivo central do MTA <span class="req">*</span> <span class="hint">— o que o cliente quer descobrir?</span></div>
+          <select id="f-obj" onchange="onInput()">
+            <option value="">Selecione o objetivo...</option>
+            <option value="canib">Entender canibalização entre canais</option>
+            <option value="otimizar">Otimizar investimento por canal / funil</option>
+            <option value="awareness">Justificar investimento em awareness</option>
+            <option value="jornada">Entender a jornada completa do usuário</option>
+            <option value="omni">Análise omnichannel (web + app + offline)</option>
+          </select>
+        </div>
+        <div class="field-grid" style="margin-top:14px;">
+          <div class="field">
+            <div class="field-label">Ciclo de decisão do consumidor</div>
+            <select id="f-ciclo" onchange="onInput()">
+              <option value="">Selecione...</option>
+              <option value="curto">Curto — 1 a 7 dias</option>
+              <option value="medio">Médio — 7 a 30 dias</option>
+              <option value="longo">Longo — 30 a 90 dias</option>
+              <option value="muito-longo">Muito longo — 90+ dias</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="field-label">Maturidade da marca</div>
+            <select id="f-marca" onchange="onInput()">
+              <option value="">Selecione...</option>
+              <option value="consolidada">Consolidada — brand search relevante</option>
+              <option value="crescimento">Em crescimento — awareness importante</option>
+              <option value="nicho">Nicho / segmentada</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-label">Conversões a modelar</div>
+        <div class="chips" id="chips-conv">
+          <div class="chip" onclick="chip(this)">Abertura de conta</div>
+          <div class="chip on" onclick="chip(this)">Geração de lead</div>
+          <div class="chip" onclick="chip(this)">Finalização de compra</div>
+          <div class="chip" onclick="chip(this)">Instalação de app</div>
+          <div class="chip" onclick="chip(this)">Contato com vendedor</div>
+          <div class="chip" onclick="chip(this)">Cadastro / Registro</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mídia -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">
+            <div class="card-title-icon">📡</div>
+            Estratégia de Mídia e Dados
+          </div>
+          <div class="card-desc">Configuração que gera automaticamente validações, riscos e queries nas próximas etapas</div>
+        </div>
+        <span class="badge badge-all">Todos</span>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-label">Canais de mídia ativos</div>
+        <div class="chips" id="chips-canal">
+          <div class="chip on" onclick="chip(this)">Google Ads</div>
+          <div class="chip on" onclick="chip(this)">Meta Ads</div>
+          <div class="chip on" onclick="chip(this)">CRM / E-mail</div>
+          <div class="chip" onclick="chip(this)">Display / Programático</div>
+          <div class="chip" onclick="chip(this)">TikTok</div>
+          <div class="chip" onclick="chip(this)">YouTube</div>
+          <div class="chip" onclick="chip(this)">Afiliados</div>
+          <div class="chip" onclick="chip(this)">Offline (TV / OOH)</div>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="field-grid">
+          <div class="field">
+            <div class="field-label">Plataformas</div>
+            <div class="chips" id="chips-plat">
+              <div class="chip on" onclick="chip(this)">🌐 Web</div>
+              <div class="chip on" onclick="chip(this)">📱 App</div>
+              <div class="chip" onclick="chip(this)">🏪 Físico</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-label">Ambiente logado?</div>
+            <div class="chips" id="chips-login">
+              <div class="chip on" onclick="chipExcl(this,'chips-login')">✓ Sim</div>
+              <div class="chip" onclick="chipExcl(this,'chips-login')">Não / Parcial</div>
+            </div>
+          </div>
+        </div>
+        <div class="field-grid" style="margin-top:14px;">
+          <div class="field">
+            <div class="field-label">MMP ativo?</div>
+            <div class="chips" id="chips-mmp">
+              <div class="chip" onclick="chip(this)">Adjust</div>
+              <div class="chip" onclick="chip(this)">AppsFlyer</div>
+              <div class="chip on" onclick="chipExcl(this,'chips-mmp')">Não usa MMP</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-label">BigQuery configurado?</div>
+            <div class="chips" id="chips-bq">
+              <div class="chip on" onclick="chipExcl(this,'chips-bq')">✓ Sim</div>
+              <div class="chip" onclick="chipExcl(this,'chips-bq')">Não / Em andamento</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-label">Perguntas do cliente <span class="badge badge-ba" style="margin-left:4px;">BA</span></div>
+        <div id="q-list">
+          <div class="q-row"><div class="q-num">1</div><input class="q-input" type="text" placeholder="O que o cliente quer descobrir?" oninput="onInput()"></div>
+          <div class="q-row"><div class="q-num">2</div><input class="q-input" type="text" placeholder="Digite outra pergunta..." oninput="onInput()"></div>
+          <div class="q-row"><div class="q-num">3</div><input class="q-input" type="text" value="O CRM está sendo canibalizado por mídia paga no last touch?" oninput="onInput()"></div>
+        </div>
+        <div style="padding:10px 16px;">
+          <button class="btn btn-ghost" style="font-size:12px; padding:5px 12px;" onclick="addQ()">+ Pergunta</button>
+        </div>
+      </div>
+
+      <div class="card-footer">💡 Cada canal e plataforma selecionada gera automaticamente validações, riscos e queries para o DE nas próximas etapas</div>
+    </div>
+
+    <!-- Actions -->
+    <div class="stage-actions" style="border-radius: var(--r-lg);">
+      <div class="actions-left">
+        <span style="font-size:12px; color:var(--text-3);" id="ft1-msg">Preencha cliente e objetivo para avançar</span>
+      </div>
+      <button class="btn btn-primary" onclick="goTo(2)">Avançar para Mapeamento →</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar-right">
+
+    <div class="lw-card" id="lw-card">
+      <div class="lw-label">⏱ Lookback Sugerida</div>
+      <div>
+        <span class="lw-val" id="lw-val">—</span>
+        <span class="lw-unit" id="lw-unit"></span>
+      </div>
+      <div class="lw-sub" id="lw-sub">Selecione o ciclo de decisão</div>
+      <div class="lw-range hidden" id="lw-range"></div>
+      <div class="lw-de-note hidden" id="lw-note">🔧 DE: extraia dados com essa janela extra antes do período de análise</div>
+    </div>
+
+    <div class="mini-grid">
+      <div class="mini-card">
+        <div class="mini-val blue" id="sum-canais">3</div>
+        <div class="mini-label">canais ativos</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-val green" id="sum-conv">1</div>
+        <div class="mini-label">conversão(ões)</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-val warn" id="sum-riscos">0</div>
+        <div class="mini-label">riscos detectados</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-val" id="sum-plat">2</div>
+        <div class="mini-label">plataformas</div>
+      </div>
+    </div>
+
+    <div class="alerts-stack" id="alerts-1"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ETAPA 2 — MAPEAMENTO
+══════════════════════════════════════════ -->
+<div class="stage-view" id="view-2">
+<div class="page-layout">
+
+  <div class="stack">
+    <div class="stage-header">
+      <div class="stage-icon-wrap" style="background: var(--de);">🗄️</div>
+      <div>
+        <div class="stage-h-title">Mapeamento e Entendimento</div>
+        <div class="stage-h-desc">Validações e riscos gerados automaticamente com base na configuração da Etapa 1</div>
+        <span class="auto-pill">✨ Gerado automaticamente</span>
+      </div>
+    </div>
+
+    <!-- Checklist maturidade -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title"><div class="card-title-icon" style="background:var(--de-bg);">✅</div>Validações de Maturidade de Dados</div>
+          <div class="card-desc">Itens marcados com ✨ foram gerados com base nos canais e plataformas selecionados</div>
+        </div>
+        <span class="badge badge-de">DE</span>
+      </div>
+      <div class="checklist" id="e2-checklist"></div>
+    </div>
+
+    <!-- Riscos -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title"><div class="card-title-icon" style="background:var(--danger-bg);">⚠️</div>Pontos Cegos e Riscos Identificados</div>
+          <div class="card-desc">Clique em cada risco para ver o impacto e a ação recomendada</div>
+        </div>
+        <span class="badge badge-auto">✨ AUTO</span>
+      </div>
+      <div style="padding:14px 16px;" id="e2-risks"></div>
+    </div>
+
+    <div class="stage-actions" style="border-radius: var(--r-lg);">
+      <button class="btn btn-ghost" onclick="goTo(1)">← Voltar</button>
+      <button class="btn btn-primary" onclick="goTo(3)">Avançar para Diagnóstico →</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar-right">
+    <!-- DE panel -->
+    <div class="de-panel">
+      <div class="card">
+        <div class="card-head" style="background:var(--de-bg); border-color:var(--de-border);">
+          <div>
+            <div class="card-title" style="color:var(--de);">🔧 Queries DE</div>
+            <div class="card-desc" style="color:var(--de); opacity:.7;">Geradas automaticamente</div>
+          </div>
+          <span class="badge badge-de">DE</span>
+        </div>
+        <div id="e2-queries"></div>
+      </div>
+    </div>
+    <div class="ds-panel">
+      <div class="alert alert-info fade-up">
+        <div class="alert-title">📐 Foco DS nesta etapa</div>
+        <div class="alert-body">Aguarde a base ser validada pelo DE. Revise os riscos identificados — eles impactam a EDA. Alinhe o agrupamento de canais antes de planejar os modelos.</div>
+      </div>
+    </div>
+    <div class="ba-panel">
+      <div class="alert alert-info fade-up">
+        <div class="alert-title">📊 Foco BA nesta etapa</div>
+        <div class="alert-body">Comunique as limitações ao cliente agora. Isso evita surpresas na apresentação final. Documente as perguntas de negócio que cada risco pode comprometer.</div>
+      </div>
+    </div>
+    <div class="alerts-stack" id="alerts-2"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ETAPA 3 — DIAGNÓSTICO
+══════════════════════════════════════════ -->
+<div class="stage-view" id="view-3">
+<div class="page-layout">
+
+  <div class="stack">
+    <div class="stage-header">
+      <div class="stage-icon-wrap" style="background: var(--ds);">🧠</div>
+      <div>
+        <div class="stage-h-title">Diagnóstico e Planejamento</div>
+        <div class="stage-h-desc">Conversão, agrupamento de canais, lookback e perguntas da EDA — pré-populados da Etapa 1</div>
+        <span class="auto-pill">✨ Pré-populado automaticamente</span>
+      </div>
+    </div>
+
+    <!-- Conversão -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="card-title-icon">🎯</div>Definição de Conversão</div>
+        <span class="badge badge-all">Todos</span>
+      </div>
+      <div class="card-section">
+        <div class="field-grid">
+          <div class="field">
+            <div class="field-label">Evento no GA4 / BigQuery <span class="req">*</span></div>
+            <input type="text" id="f-conv-evt" placeholder="Ex: generate_lead, purchase">
+          </div>
+          <div class="field">
+            <div class="field-label">Escopo</div>
+            <div class="chips">
+              <div class="chip on" onclick="chipExcl(this, null)">1ª conversão por usuário</div>
+              <div class="chip" onclick="chipExcl(this, null)">Todas as conversões</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;" id="e3-conv-alert"></div>
+      </div>
+    </div>
+
+    <!-- Canal table -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title"><div class="card-title-icon">📊</div>Agrupamento de Canais</div>
+          <div class="card-desc">Pré-populado com base nos canais ativos da Etapa 1 — revise com o cliente antes de construir a base</div>
+        </div>
+        <span class="badge badge-auto">✨ AUTO</span>
+      </div>
+      <div style="padding:14px 16px;">
+        <div class="alert alert-de" style="margin-bottom:12px;">
+          <div class="alert-title">🔧 DE: use esta tabela no CASE WHEN da query de agrupamento de canais</div>
+          <div class="alert-body">Valide cada grupo com o cliente e com o BA antes de construir a base. A granularidade aqui define o que será possível descobrir.</div>
+        </div>
+        <table class="ch-table" id="e3-ch-table"></table>
+      </div>
+    </div>
+
+    <!-- Lookback -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="card-title-icon">🕐</div>Lookback Window e Períodos</div>
+        <span class="badge badge-auto">✨ Sugerida</span>
+      </div>
+      <div class="card-section">
+        <div class="field-grid">
+          <div class="field">
+            <div class="field-label">Lookback window (dias)</div>
+            <input type="text" id="f-lw-input" placeholder="Ex: 30">
+            <div style="font-size:11px; color:var(--de); margin-top:4px; font-weight:600;" id="e3-lw-hint"></div>
+          </div>
+          <div class="field">
+            <div class="field-label">Período de análise</div>
+            <div style="display:flex; gap:6px;">
+              <input type="text" placeholder="Início: 01/01/2025">
+              <input type="text" placeholder="Fim: 31/03/2025">
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div class="field-label" style="margin-bottom:6px;">Período mínimo de extração (BigQuery)</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; background:var(--navy); color:#7DD3FC; padding:9px 12px; border-radius:6px;" id="e3-bq-range">início − <span id="lw-days-e3">?</span> dias → fim do período</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDA -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title"><div class="card-title-icon" style="background:var(--ds-bg);">🔍</div>Perguntas da EDA</div>
+          <div class="card-desc">Geradas com base no objetivo e configuração do projeto</div>
+        </div>
+        <span class="badge badge-auto">✨ AUTO</span>
+      </div>
+      <div class="checklist" id="e3-eda"></div>
+      <div class="card-footer">📐 DS: essas perguntas vão para o notebook. BA: valide que cobrem as perguntas do cliente da Etapa 1.</div>
+    </div>
+
+    <!-- Modelo -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="card-title-icon" style="background:var(--ds-bg);">🤖</div>Modelo de Atribuição</div>
+        <span class="badge badge-ds">DS</span>
+      </div>
+      <div class="card-section">
+        <div id="e3-model-rec" style="margin-bottom:12px;"></div>
+        <div class="model-opt selected" onclick="selModel(this)">
+          <div class="model-opt-top">
+            <span class="model-name">📐 Markov Chain</span>
+            <span class="model-rec" id="markov-rec-badge">RECOMENDADO</span>
+          </div>
+          <div class="model-desc">Considera jornadas não conversoras. Gera efeito de remoção e matriz de transição entre canais. Ideal para análise de canibalização.</div>
+        </div>
+        <div class="model-opt" onclick="selModel(this)">
+          <div class="model-opt-top"><span class="model-name">🎮 Shapley Value</span></div>
+          <div class="model-desc">Distribuição justa de crédito por contribuição marginal de cada canal. Mais intenso computacionalmente.</div>
+        </div>
+        <div class="model-opt" onclick="selModel(this)">
+          <div class="model-opt-top"><span class="model-name">📐 + 🎮 Comparação Markov vs. Shapley</span></div>
+          <div class="model-desc">Recomendado quando há dúvida sobre qual modelo reflete melhor a realidade do negócio do cliente.</div>
+        </div>
+        <div class="model-opt" onclick="selModel(this)">
+          <div class="model-opt-top"><span class="model-name">🔍 Apenas EDA</span></div>
+          <div class="model-desc">GA já responde as perguntas, ou o objetivo é puramente exploratório — sem modelagem de atribuição.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-actions" style="border-radius: var(--r-lg);">
+      <button class="btn btn-ghost" onclick="goTo(2)">← Voltar</button>
+      <button class="btn btn-primary" onclick="goTo(4)">Avançar para Construção →</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar-right">
+    <div class="alerts-stack" id="alerts-3"></div>
+    <div class="de-panel">
+      <div class="query-block">
+        <div class="query-head">
+          <div class="query-head-info">
+            <div class="query-name">Query: Agrupamento de Canais</div>
+            <div class="query-desc">CASE WHEN para categorizar sessões</div>
+          </div>
+        </div>
+        <div class="query-code"><span class="cm">-- Agrupamento de canais na base</span>
+<span class="kw">SELECT</span> session_id,
+  <span class="kw">CASE</span>
+    <span class="kw">WHEN</span> medium = <span class="str">'cpc'</span>        <span class="kw">THEN</span> <span class="str">'Mídia Performance'</span>
+    <span class="kw">WHEN</span> medium = <span class="str">'display'</span>    <span class="kw">THEN</span> <span class="str">'Mídia Awareness'</span>
+    <span class="kw">WHEN</span> medium = <span class="str">'email'</span>      <span class="kw">THEN</span> <span class="str">'CRM'</span>
+    <span class="kw">WHEN</span> medium = <span class="str">'organic'</span>    <span class="kw">THEN</span> <span class="str">'Orgânico'</span>
+    <span class="kw">WHEN</span> source = <span class="str">'(direct)'</span>  <span class="kw">THEN</span> <span class="str">'Direto'</span>
+    <span class="kw">ELSE</span>                         <span class="str">'Outros'</span>
+  <span class="kw">END</span> <span class="kw">AS</span> canal_agrupado
+<span class="kw">FROM</span> sessions_base</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ETAPA 4 — CONSTRUÇÃO
+══════════════════════════════════════════ -->
+<div class="stage-view" id="view-4">
+<div class="page-layout">
+
+  <div class="stack">
+    <div class="stage-header">
+      <div class="stage-icon-wrap" style="background: linear-gradient(135deg,var(--ba),#059669);">🏗️</div>
+      <div>
+        <div class="stage-h-title">Construção</div>
+        <div class="stage-h-desc">Tarefas geradas por área (DE / DS / BA) com base em tudo que foi configurado</div>
+        <span class="auto-pill">✨ Tarefas geradas automaticamente</span>
+      </div>
+    </div>
+
+    <!-- DE -->
+    <div class="card">
+      <div class="card-head" style="border-left: 4px solid var(--de);">
+        <div>
+          <div class="card-title"><div class="card-title-icon" style="background:var(--de-bg);">🔧</div>Base de Jornada</div>
+          <div class="card-desc">Tarefas do DE — construção, validação e entrega da base</div>
+        </div>
+        <span class="badge badge-de">DE</span>
+      </div>
+      <div class="checklist" id="e4-de"></div>
+      <div class="card-footer">⚠️ Não passe a base para o DS sem validar o volume e o User ID cross-platform. Refatoração posterior é muito custosa.</div>
+    </div>
+
+    <!-- DS -->
+    <div class="card">
+      <div class="card-head" style="border-left: 4px solid var(--ds);">
+        <div>
+          <div class="card-title"><div class="card-title-icon" style="background:var(--ds-bg);">🤖</div>EDA e Modelo</div>
+          <div class="card-desc">Tarefas do DS — análise exploratória e execução do modelo</div>
+        </div>
+        <span class="badge badge-ds">DS</span>
+      </div>
+      <div class="checklist" id="e4-ds"></div>
+    </div>
+
+    <!-- BA -->
+    <div class="card">
+      <div class="card-head" style="border-left: 4px solid var(--ba);">
+        <div>
+          <div class="card-title"><div class="card-title-icon" style="background:var(--ba-bg);">📊</div>Insights e Apresentação</div>
+          <div class="card-desc">Tarefas do BA — storytelling, resposta às perguntas do cliente e entrega</div>
+        </div>
+        <span class="badge badge-ba">BA</span>
+      </div>
+      <div class="checklist" id="e4-ba"></div>
+    </div>
+
+    <div class="stage-actions" style="border-radius: var(--r-lg);">
+      <button class="btn btn-ghost" onclick="goTo(3)">← Voltar</button>
+      <div class="progress-wrap">
+        <div class="progress-track">
+          <div class="progress-fill" id="e4-bar" style="width:0%"></div>
+        </div>
+        <span class="progress-label" id="e4-pct">0% concluído</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar-right">
+    <div class="de-panel">
+      <div class="query-block">
+        <div class="query-head">
+          <div class="query-head-info">
+            <div class="query-name">Base de Jornadas</div>
+            <div class="query-desc">Eventos → uma linha por jornada</div>
+          </div>
+        </div>
+        <div class="query-code"><span class="cm">-- Montar base de jornadas</span>
+<span class="kw">SELECT</span>
+  user_id,
+  <span class="fn">STRING_AGG</span>(
+    canal_agrupado,
+    <span class="str">' > '</span>
+    <span class="kw">ORDER BY</span> event_timestamp
+  ) <span class="kw">AS</span> jornada,
+  <span class="fn">MAX</span>(is_conversion) <span class="kw">AS</span> converteu,
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> touchpoints,
+  <span class="fn">DATE_DIFF</span>(
+    <span class="fn">MAX</span>(event_date),
+    <span class="fn">MIN</span>(event_date),
+    <span class="kw">DAY</span>
+  ) <span class="kw">AS</span> duracao_dias
+<span class="kw">FROM</span> sessions_agrupadas
+<span class="kw">WHERE</span> event_date <span class="kw">BETWEEN</span>
+  <span class="str">'DATA_INICIO'</span> <span class="kw">AND</span> <span class="str">'DATA_FIM'</span>
+<span class="kw">GROUP BY</span> user_id</div>
+      </div>
+    </div>
+    <div class="alerts-stack" id="alerts-4"></div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+const S = { role: 'de', stage: 1 };
+
+const LW_MAP = {
+  curto:       { days: 14,  label: '14 dias',  hint: 'Ciclo curto → 7–14 dias. Valide na EDA.' },
+  medio:       { days: 30,  label: '30 dias',  hint: 'Ciclo médio → 30 dias recomendados. Valide na EDA.' },
+  longo:       { days: 60,  label: '60 dias',  hint: 'Ciclo longo → 60 dias. Valide na EDA se 90% das jornadas fecham antes.' },
+  'muito-longo':{ days: 90, label: '90 dias',  hint: 'Ciclo muito longo → 90 dias ou mais. Valide empiricamente.' }
+};
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function goTo(n) {
+  document.querySelectorAll('.stage-view').forEach(v => v.classList.remove('sv-active'));
+  document.getElementById('view-' + n).classList.add('sv-active');
+
+  for (let i = 1; i <= 4; i++) {
+    const ss = document.getElementById('ss-' + i);
+    const sb = document.getElementById('sb-' + i);
+    ss.classList.remove('ss-active','ss-done');
+    if (i < n) { ss.classList.add('ss-done'); sb.textContent = '✓'; }
+    else { sb.textContent = i; }
+    if (i === n) ss.classList.add('ss-active');
+  }
+  S.stage = n;
+  if (n === 2) buildStage2();
+  if (n === 3) buildStage3();
+  if (n === 4) buildStage4();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════════
+// ROLE
+// ═══════════════════════════════════════════════
+function setRole(r) {
+  S.role = r;
+  document.body.setAttribute('data-role', r);
+  ['de','ds','ba'].forEach(x => {
+    const b = document.getElementById('rb-' + x);
+    b.className = 'role-btn r' + x + (x === r ? ' r-active' : '');
+  });
+}
+
+// ═══════════════════════════════════════════════
+// CHIPS
+// ═══════════════════════════════════════════════
+function chip(el) { el.classList.toggle('on'); onInput(); }
+function chipExcl(el, groupId) {
+  const g = groupId ? document.getElementById(groupId) : el.closest('.chips');
+  if (g) g.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  onInput();
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+function chipsOn(id) {
+  return [...document.querySelectorAll('#' + id + ' .chip.on')].map(c => c.textContent.trim());
+}
+function v(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function hasChip(id, str) { return chipsOn(id).some(c => c.toLowerCase().includes(str.toLowerCase())); }
+
+// ═══════════════════════════════════════════════
+// LOOKBACK
+// ═══════════════════════════════════════════════
+function updateLookback() {
+  const ciclo = v('f-ciclo');
+  const lw = LW_MAP[ciclo];
+  const valEl = document.getElementById('lw-val');
+  const unitEl = document.getElementById('lw-unit');
+  const subEl = document.getElementById('lw-sub');
+  const rangeEl = document.getElementById('lw-range');
+  const noteEl = document.getElementById('lw-note');
+
+  if (lw) {
+    valEl.textContent = lw.days;
+    unitEl.textContent = 'dias';
+    subEl.textContent = lw.label + ' recomendados';
+    rangeEl.textContent = '🔧 DE: início do período − ' + lw.days + ' dias';
+    rangeEl.classList.remove('hidden');
+    noteEl.classList.remove('hidden');
+    const fi = document.getElementById('f-lw-input');
+    if (fi) fi.value = lw.days;
+    const dd = document.getElementById('lw-days-e3');
+    if (dd) dd.textContent = lw.days;
+    const h = document.getElementById('e3-lw-hint');
+    if (h) h.textContent = '💡 ' + lw.hint;
+  } else {
+    valEl.textContent = '—';
+    unitEl.textContent = '';
+    subEl.textContent = 'Selecione o ciclo de decisão';
+    rangeEl.classList.add('hidden');
+    noteEl.classList.add('hidden');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// ALERTS (gerados dinamicamente)
+// ═══════════════════════════════════════════════
+function buildAlerts() {
+  const obj = v('f-obj');
+  const marca = v('f-marca');
+  const ciclo = v('f-ciclo');
+  const hasApp = hasChip('chips-plat','app');
+  const hasWeb = hasChip('chips-plat','web');
+  const hasCRM = hasChip('chips-canal','crm');
+  const hasOffline = hasChip('chips-canal','offline');
+  const hasMMP = hasChip('chips-mmp','adjust') || hasChip('chips-mmp','appsflyer');
+
+  const alerts = [];
+  if (obj === 'canib') alerts.push({ type: 'info', t: 'Objetivo: Canibalização → Markov recomendado', b: 'DS: a comparação Last Click vs. Markov com efeito de remoção responde diretamente o que o cliente quer. Planeje isso desde já.' });
+  if (obj === 'awareness') alerts.push({ type: 'warn', t: 'Awareness → lookback provavelmente maior', b: 'Para capturar impacto de canais de awareness, a lookback tende a precisar de 60–90 dias. Valide na EDA.' });
+  if (marca === 'consolidada') alerts.push({ type: 'warn', t: 'Marca consolidada → risco de brand search', b: 'Brand search tende a aparecer como last touch em marcas conhecidas — pode ser interpretado como canibalização. Discuta com o cliente antes da EDA.' });
+  if (hasApp && hasWeb) alerts.push({ type: 'danger', t: '⚠️ App + Web → User ID cross-platform crítico', b: 'DE: valide se o mesmo User ID persiste entre as duas plataformas. Sem isso, o mesmo usuário é contado duas vezes na jornada.' });
+  if (hasCRM) alerts.push({ type: 'info', t: 'CRM ativo → mapear identificador de usuário', b: 'DE: confirme como o CRM identifica o usuário e se é cruzável com o GA4 antes de montar a base.' });
+  if (hasOffline) alerts.push({ type: 'warn', t: 'Canal offline → identificador necessário', b: 'Conversões offline só entram no MTA se houver um identificador de usuário cruzável. Mapeie com o cliente.' });
+
+  const riscos = alerts.filter(a => a.type === 'danger' || a.type === 'warn').length;
+  const el = document.getElementById('sum-riscos');
+  if (el) el.textContent = riscos;
+
+  const alertHtml = a => `<div class="alert alert-${a.type === 'danger' ? 'danger' : a.type === 'warn' ? 'warn' : 'info'} fade-up"><div class="alert-title">${a.t}</div><div class="alert-body">${a.b}</div></div>`;
+  ['1','2','3','4'].forEach(n => {
+    const el = document.getElementById('alerts-' + n);
+    if (el) el.innerHTML = alerts.map(alertHtml).join('');
+  });
+
+  // Model rec
+  const recEl = document.getElementById('e3-model-rec');
+  const markovBadge = document.getElementById('markov-rec-badge');
+  if (recEl) {
+    if (obj === 'canib') {
+      recEl.innerHTML = `<div class="alert alert-info"><div class="alert-title">💡 DS: Markov Chain recomendado</div><div class="alert-body">O efeito de remoção e a matriz de transição respondem diretamente o objetivo de canibalização definido pelo cliente.</div></div>`;
+      if (markovBadge) markovBadge.style.display = 'inline-flex';
+    } else if (obj === 'awareness') {
+      recEl.innerHTML = `<div class="alert alert-info"><div class="alert-title">💡 DS: EDA pode ser suficiente</div><div class="alert-body">Para awareness, a análise exploratória da posição dos canais na jornada pode responder as perguntas sem modelagem completa.</div></div>`;
+      if (markovBadge) markovBadge.style.display = 'none';
+    } else { recEl.innerHTML = ''; if (markovBadge) markovBadge.style.display = 'inline-flex'; }
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SUMMARY
+// ═══════════════════════════════════════════════
+function updateSummary() {
+  const canais = chipsOn('chips-canal').length;
+  const conv = chipsOn('chips-conv').length;
+  const plat = chipsOn('chips-plat').length;
+  const c = v('f-cliente');
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('sum-canais', canais);
+  set('sum-conv', conv || 1);
+  set('sum-plat', plat || 1);
+
+  const hp = document.getElementById('hdr-project');
+  if (hp) hp.textContent = c ? '📋 ' + c : '📋 Novo Projeto';
+}
+
+// ═══════════════════════════════════════════════
+// MAIN INPUT HANDLER
+// ═══════════════════════════════════════════════
+function onInput() {
+  updateLookback();
+  updateSummary();
+  buildAlerts();
+}
+
+// ═══════════════════════════════════════════════
+// BUILD STAGE 2
+// ═══════════════════════════════════════════════
+function buildStage2() {
+  const hasApp = hasChip('chips-plat','app');
+  const hasWeb = hasChip('chips-plat','web');
+  const hasCRM = hasChip('chips-canal','crm');
+  const hasMMP = hasChip('chips-mmp','adjust') || hasChip('chips-mmp','appsflyer');
+  const hasOffline = hasChip('chips-canal','offline');
+  const bqOk = hasChip('chips-bq','sim');
+
+  const checks = [
+    { t: 'GA4 → BigQuery export ativo e configurado', auto: true, role:'de', reason:'Fonte primária obrigatória para MTA' },
+    hasApp && hasWeb ? { t: 'User ID persistindo entre web e app (Golden ID / cross-platform)', auto: true, role:'de', reason:'App + Web detectado', crit: true } : null,
+    hasCRM ? { t: 'Dados de CRM disponíveis com User ID cruzável com o GA4', auto: true, role:'de', reason:'CRM é canal ativo' } : null,
+    hasMMP ? { t: 'Exportação dos dados de MMP para BigQuery / GCP configurada', auto: true, role:'de', reason:'MMP ativo — dados de app precisam ser cruzados', crit: true } : null,
+    hasOffline ? { t: 'Dados offline mapeados com identificador de usuário cruzável', auto: true, role:'de', reason:'Canal offline detectado', crit: true } : null,
+    { t: 'UTMs padronizados e consistentes (source, medium, campaign)', auto: false },
+    { t: 'Histórico suficiente: mín. 3 meses de dados de boa qualidade', auto: false },
+    { t: 'Acessos e permissões ao BigQuery confirmados para o time', auto: false },
+    { t: 'Volume estimado validado (sessões/mês no período de análise)', auto: false },
+    hasApp ? { t: '⚠️ Testado na prática: usuário logado no app e web é unificado corretamente', auto: true, role:'de', reason:'Etapa crítica antes de construir qualquer base', crit: true } : null,
+  ].filter(Boolean);
+
+  const cl = document.getElementById('e2-checklist');
+  cl.innerHTML = checks.map((c, i) => `
+    <div class="check-row${c.auto ? (c.crit ? ' auto-de crit' : ' auto-de') : ''}" onclick="toggleCheck(this)">
+      <div class="chkbox">✓</div>
+      <div style="flex:1;">
+        <div class="check-text">${c.t}</div>
+        ${c.auto ? `<div class="check-meta"><span class="badge badge-auto">✨ AUTO</span> ${c.reason}${c.crit ? ' <span class="badge" style="background:var(--danger);color:#fff;border:none;font-size:9px;">CRÍTICO</span>' : ''}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  // Risks
+  const risks = [
+    hasApp && hasWeb ? { lv:'high', t:'User ID não unificado entre web e app', d:'O mesmo usuário será contado como duas pessoas distintas — a jornada ficará fragmentada e os resultados, incorretos.', a:'→ DE: rodar query de validação de User ID cross-platform antes de construir qualquer base' } : null,
+    hasApp ? { lv:'high', t:'Quebra de sessão via deep link / Unilink para app', d:'Cliques em anúncios que abrem o app via link direto podem quebrar a sessão e perder o touchpoint de origem da mídia.', a:'→ DE: implementar parâmetro de rastreamento no deep link conforme documentação técnica' } : null,
+    hasCRM ? { lv:'med', t:'CRM sem identificador cruzável com GA4', d:'Se o CRM não usar o mesmo User ID do GA4, os disparos de e-mail e push não aparecerão corretamente na jornada do usuário.', a:'→ BA + DE: mapear como o CRM identifica o usuário e definir estratégia de cruzamento' } : null,
+    !bqOk ? { lv:'high', t:'BigQuery não configurado — MTA inviável', d:'A exportação do GA4 para BigQuery é condição básica para qualquer projeto de MTA customizado. Sem isso, o projeto não avança.', a:'→ DE + cliente: priorizar configuração do BigQuery export imediatamente' } : null,
+    hasMMP ? { lv:'med', t:'Dados de MMP em plataforma separada', d:'Dados de Adjust/AppsFlyer precisam ser exportados para o GCP e integrados ao BigQuery para compor a jornada do usuário em app.', a:'→ DE: planejar exportação e base unificada MMP + GA4 com ID único' } : null,
+    hasOffline ? { lv:'med', t:'Canal offline sem identificador confirmado', d:'Para incluir conversões offline no MTA é necessário um identificador de usuário cruzável. Sem isso, os dados offline ficam fora da jornada.', a:'→ BA + cliente: confirmar se há ID de usuário para cruzamento com o ambiente digital' } : null,
+  ].filter(Boolean);
+
+  const rp = document.getElementById('e2-risks');
+  rp.innerHTML = risks.map((r, i) => `
+    <div class="risk-card">
+      <div class="risk-head" onclick="toggleRisk(this)">
+        <span class="risk-level ${r.lv === 'high' ? 'rl-high' : 'rl-med'}">${r.lv === 'high' ? 'ALTO' : 'MÉDIO'}</span>
+        <span class="risk-title">${r.t}</span>
+        <span class="risk-chevron">▾</span>
+      </div>
+      <div class="risk-body">
+        ${r.d}
+        <div class="risk-action">${r.a}</div>
+      </div>
+    </div>`).join('');
+
+  // Queries for DE
+  const queries = [];
+  if (hasApp && hasWeb) queries.push({
+    name: 'Validação User ID cross-platform',
+    desc: 'User IDs que aparecem em web E app',
+    code: `<span class="cm">-- User IDs presentes em web E app</span>\n<span class="kw">SELECT</span>\n  user_id,\n  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> platform) <span class="kw">AS</span> plataformas,\n  <span class="fn">ARRAY_AGG</span>(<span class="kw">DISTINCT</span> platform) <span class="kw">AS</span> lista\n<span class="kw">FROM</span> <span class="str">\`proj.dataset.events_*\`</span>\n<span class="kw">WHERE</span> user_id <span class="kw">IS NOT NULL</span>\n<span class="kw">GROUP BY</span> user_id\n<span class="kw">HAVING</span> plataformas > <span class="num">1</span>\n<span class="kw">LIMIT</span> <span class="num">200</span>`
+  });
+  queries.push({
+    name: 'Cobertura de UTMs',
+    desc: '% sessões com e sem UTM por source/medium',
+    code: `<span class="cm">-- Diagnóstico de cobertura UTM</span>\n<span class="kw">SELECT</span>\n  traffic_source.source,\n  traffic_source.medium,\n  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> sessoes,\n  <span class="fn">ROUND</span>(<span class="fn">COUNT</span>(*) * <span class="num">100.0</span> /\n    <span class="fn">SUM</span>(<span class="fn">COUNT</span>(*)) <span class="kw">OVER</span>(), <span class="num">2</span>) <span class="kw">AS</span> pct\n<span class="kw">FROM</span> <span class="str">\`proj.dataset.events_*\`</span>\n<span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span>\n  <span class="str">'20250101'</span> <span class="kw">AND</span> <span class="str">'20250331'</span>\n<span class="kw">GROUP BY</span> <span class="num">1</span>, <span class="num">2</span>\n<span class="kw">ORDER BY</span> sessoes <span class="kw">DESC</span>`
+  });
+
+  const qc = document.getElementById('e2-queries');
+  qc.innerHTML = queries.map(q => `
+    <div style="border-bottom:1px solid var(--de-border);">
+      <div class="query-head">
+        <div class="query-head-info">
+          <div class="query-name">${q.name}</div>
+          <div class="query-desc">${q.desc}</div>
+        </div>
+      </div>
+      <div class="query-code">${q.code}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+// BUILD STAGE 3
+// ═══════════════════════════════════════════════
+function buildStage3() {
+  const canal = chipsOn('chips-canal');
+  const plat = chipsOn('chips-plat');
+  const obj = v('f-obj');
+  const lw = document.getElementById('lw-val')?.textContent || '?';
+
+  // Canal table
+  const rows = [
+    { name:'Direto', crit:'(direct) / (none)', ex:'direct / none' },
+    { name:'Orgânico', crit:'organic', ex:'google / organic' },
+  ];
+  if (canal.some(c=>c.includes('Google'))) rows.push({ name:'Mídia Performance', crit:'cpc, paid_search', ex:'google / cpc' });
+  if (canal.some(c=>c.includes('Meta'))) rows.push({ name:'Mídia Social Paga', crit:'paid_social, cpm', ex:'meta / paid_social' });
+  if (canal.some(c=>c.includes('YouTube')||c.includes('Display'))) rows.push({ name:'Mídia Awareness', crit:'display, video, awareness', ex:'youtube / video' });
+  if (canal.some(c=>c.includes('CRM'))) { rows.push({ name:'CRM Transacional', crit:'email / transacional', ex:'crm / transacional' }); rows.push({ name:'CRM Promocional', crit:'email / promocional, push', ex:'crm / push' }); }
+  if (canal.some(c=>c.includes('Afiliados'))) rows.push({ name:'Afiliados', crit:'affiliate, referral', ex:'afiliados / referral' });
+  rows.push({ name:'Não identificado', crit:'sem UTM válido', ex:'Unassigned' });
+
+  const tbl = document.getElementById('e3-ch-table');
+  tbl.innerHTML = `<thead><tr><th>Canal Agrupado</th><th>Critério (medium / source)</th><th>Exemplos</th></tr></thead><tbody>` +
+    rows.map((r,i) => `<tr><td class="ch-name">${r.name}</td><td class="ch-code">${r.crit}</td><td style="color:var(--text-3);font-size:11px;">${r.ex}</td></tr>`).join('') + `</tbody>`;
+
+  // EDA questions
+  const edaQ = [
+    { t: 'Qual o tempo médio e nº de touchpoints até a conversão?', auto: false },
+    { t: 'Qual a % de jornadas com 1, 2, 3 ou mais touchpoints?', auto: false },
+    { t: 'Quais canais aparecem mais em jornadas conversoras vs. não conversoras?', auto: false },
+    { t: 'Qual o papel de cada canal — Introdutor / Engajador / Conversor?', auto: false },
+  ];
+  const hasApp = hasChip('chips-plat','app');
+  const hasWeb = hasChip('chips-plat','web');
+  if (hasApp && hasWeb) edaQ.push({ t: 'Como se distribui a jornada entre web e app? Há diferença de conversão entre plataformas?', auto: true, role:'ds', reason:'Web + App ativos' });
+  if (hasChip('chips-canal','crm')) edaQ.push({ t: 'O CRM aparece como Conversor ou como Engajador? Há canibalização com mídia paga?', auto: true, role:'ds', reason:'CRM é canal ativo' });
+  if (obj === 'canib') edaQ.push({ t: 'Há canibalização entre brand search e performance paga? Brand search aparece como last touch com que frequência?', auto: true, role:'ds', reason:'Objetivo: canibalização' });
+  if (obj === 'awareness') edaQ.push({ t: 'Os canais de awareness aparecem no início da jornada? Com que frequência contribuem para conversões futuras?', auto: true, role:'ds', reason:'Objetivo: justificar awareness' });
+  edaQ.push({ t: `Qual a % de jornadas encerradas dentro de ${lw} dias? (calibragem da lookback window)`, auto: false });
+  edaQ.push({ t: 'Como o comportamento dos canais difere entre os dois períodos analisados?', auto: false });
+
+  const edaEl = document.getElementById('e3-eda');
+  edaEl.innerHTML = edaQ.map((q, i) => `
+    <div class="check-row${q.auto ? ' auto-' + (q.role||'ds') : ''}" onclick="toggleCheck(this)">
+      <div class="chkbox">✓</div>
+      <div style="flex:1;">
+        <div class="check-text">${q.t}</div>
+        ${q.auto ? `<div class="check-meta"><span class="badge badge-auto">✨ AUTO</span> ${q.reason}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  buildAlerts();
+}
+
+// ═══════════════════════════════════════════════
+// BUILD STAGE 4
+// ═══════════════════════════════════════════════
+function buildStage4() {
+  const hasApp = hasChip('chips-plat','app');
+  const hasWeb = hasChip('chips-plat','web');
+  const hasCRM = hasChip('chips-canal','crm');
+  const lw = document.getElementById('lw-val')?.textContent || '?';
+
+  const deTasks = [
+    { t: `Extrair dados do BigQuery: GA4 events, com ${lw} dias extras antes do período de análise`, auto: true, reason: 'Período calculado com lookback sugerida' },
+    hasApp && hasWeb ? { t: '⚠️ Validar User ID cross-platform antes de qualquer join (query de diagnóstico)', auto: true, reason: 'Web + App — risco ALTO detectado', crit: true } : null,
+    hasCRM ? { t: 'Unificar dados de GA4 + CRM por User ID / identificador mapeado', auto: true, reason: 'CRM é canal ativo' } : null,
+    { t: 'Aplicar agrupamento de canais (CASE WHEN conforme tabela da Etapa 3)', auto: false },
+    { t: 'Filtrar conversão: evento definido na Etapa 3, 1ª conversão por usuário', auto: false },
+    hasApp ? { t: 'Tratar quebra de sessão via deep link / Unilink para app', auto: true, reason: 'App ativo — ponto cego mapeado na Etapa 2' } : null,
+    { t: 'Transformar base de eventos → base de jornadas (uma linha por jornada por usuário)', auto: false },
+    { t: 'Validar volume: nº de jornadas conversoras e não conversoras', auto: false },
+    { t: '🔴 Compartilhar base com DS para revisão ANTES de rodar o modelo', auto: false },
+    { t: 'Documentar queries, decisões técnicas e limitações no repositório', auto: false },
+  ].filter(Boolean);
+
+  const dsTasks = [
+    { t: 'Receber e revisar base de jornada do DE — alinhar estrutura antes de avançar', auto: false },
+    { t: 'Executar EDA: todas as perguntas definidas na Etapa 3', auto: false },
+    { t: `Validar lookback window de ${lw} dias empiricamente (% de jornadas encerradas por nº de dias)`, auto: true, reason: `Lookback ${lw} dias sugerida — confirme na EDA` },
+    { t: 'Configurar e executar modelo Markov (biblioteca Jatoox)', auto: false },
+    { t: 'Extrair efeito de remoção e matriz de transição entre canais', auto: false },
+    { t: 'Comparar resultados com Last Click (baseline obrigatório para toda análise)', auto: false },
+    { t: 'Executar para 2º período (se definido na Etapa 3)', auto: false },
+    { t: 'Versionar notebooks no GitHub (organizado, comentado, reproduzível)', auto: false },
+  ];
+
+  const qInputs = [...document.querySelectorAll('#q-list .q-input')].map(i => i.value.trim()).filter(Boolean);
+  const baTasks = [
+    ...qInputs.map(q => ({ t: `Responder: "${q}"`, auto: true, reason: 'Pergunta registrada na Etapa 1' })),
+    { t: 'Estruturar storytelling: papel de cada canal (Introdutor / Engajador / Conversor)', auto: false },
+    { t: 'Elaborar recomendações de otimização de investimento por funil', auto: false },
+    { t: 'Apresentar limitações e pontos cegos ao cliente de forma clara e objetiva', auto: false },
+    { t: 'Revisar apresentação completa com DE e DS antes de ir ao cliente', auto: false },
+  ];
+
+  function renderList(tasks, elId, autoClass) {
+    document.getElementById(elId).innerHTML = tasks.map((t, i) => `
+      <div class="check-row${t.auto ? ' ' + autoClass : ''}${t.crit ? ' crit' : ''}" onclick="toggleCheck4(this)">
+        <div class="chkbox">✓</div>
+        <div style="flex:1;">
+          <div class="check-text">${t.t}</div>
+          ${t.auto ? `<div class="check-meta"><span class="badge badge-auto">✨ AUTO</span> ${t.reason}${t.crit ? ' <span class="badge" style="background:var(--danger);color:#fff;border:none;font-size:9px;">CRÍTICO</span>' : ''}</div>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  renderList(deTasks, 'e4-de', 'auto-de');
+  renderList(dsTasks, 'e4-ds', 'auto-ds');
+  renderList(baTasks, 'e4-ba', 'auto-ba');
+  updateProgress4();
+}
+
+// ═══════════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════════
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  el.querySelector('.chkbox').textContent = el.classList.contains('checked') ? '✓' : '';
+}
+
+function toggleCheck4(el) {
+  el.classList.toggle('checked');
+  el.querySelector('.chkbox').textContent = el.classList.contains('checked') ? '✓' : '';
+  updateProgress4();
+}
+
+function updateProgress4() {
+  const all = document.querySelectorAll('#view-4 .check-row');
+  const done = document.querySelectorAll('#view-4 .check-row.checked');
+  const pct = all.length ? Math.round(done.length / all.length * 100) : 0;
+  const bar = document.getElementById('e4-bar');
+  const lbl = document.getElementById('e4-pct');
+  if (bar) { bar.style.width = pct + '%'; bar.className = 'progress-fill' + (pct === 100 ? ' done' : ''); }
+  if (lbl) lbl.textContent = `${pct}% concluído (${done.length}/${all.length})`;
+}
+
+function toggleRisk(el) {
+  const body = el.nextElementSibling;
+  body.classList.toggle('visible');
+  el.classList.toggle('open');
+}
+
+function selModel(el) {
+  document.querySelectorAll('.model-opt').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function addQ() {
+  const list = document.getElementById('q-list');
+  const n = list.children.length + 1;
+  const div = document.createElement('div');
+  div.className = 'q-row';
+  div.innerHTML = `<div class="q-num">${n}</div><input class="q-input" type="text" placeholder="Digite a pergunta do cliente..." oninput="onInput()" style="flex:1;border:none;border-radius:0;padding:0;background:transparent;box-shadow:none;font-size:13px;color:var(--text);">`;
+  list.appendChild(div);
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+onInput();
+</script>
+</body>
+</html>
