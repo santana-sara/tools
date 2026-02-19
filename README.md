@@ -109,10 +109,9 @@ A ferramenta gera conteúdo dinamicamente com base nas escolhas da Etapa 1:
 
 ## 🔧 Referências técnicas
 
-- **Biblioteca de modelos:** [Jatoox](https://github.com/) — criada por Jaimeira
 - **Infraestrutura de dados:** Google BigQuery (GA4 export)
 - **Modelos suportados:** Markov Chain, Shapley Value
-- **Projetos de referência:** OLX (Zap), Banco Inter
+- **Projetos de referência:** 
 
 ---
 
