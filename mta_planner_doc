@@ -1,0 +1,89 @@
+# Ferramenta de MTA (MTA Planner)
+
+A ferramenta tem como objetivo automatizar e integrar os processos de projetos de Multi-Touch Attribution (MTA). Ela é adaptável a cada projeto e suas particularidades — as informações preenchidas na primeira etapa alimentam automaticamente as etapas seguintes, gerando checklists, queries e recomendações contextualizadas para cada cliente.
+
+A ferramenta possui 4 etapas e a função Validador. As etapas são:
+
+1. Entrevistas
+2. Mapeamento
+3. Diagnóstico
+4. Construção
+
+Além disso, a ferramenta possui um **role switcher** (DE / DS / BA) acessível no canto superior direito. Ele filtra o conteúdo exibido em cada etapa de acordo com o papel de quem está usando — o DE vê queries e validações técnicas, o DS vê pontos de atenção para modelagem, e o BA vê o que precisa confirmar com o cliente.
+
+---
+
+## 1. Entrevistas
+
+Esta etapa é voltada para capturar o contexto do projeto. Nela são preenchidos os dados do cliente, o objetivo do projeto (ex: canibalização entre canais, otimização de investimento, awareness), as estratégias de mídia ativas, as plataformas (Web, App, Físico) e as perguntas levantadas junto ao cliente.
+
+Os campos são flexíveis: além das opções padrão, é possível adicionar canais, plataformas e conversões personalizadas para cada projeto.
+
+Ao preencher essas informações, o sistema gera automaticamente o conteúdo das etapas seguintes — checklists, riscos, queries e recomendações — adaptados às particularidades de cada cliente.
+
+---
+
+## 2. Mapeamento
+
+A etapa de Mapeamento é gerada automaticamente com base nos dados preenchidos na Etapa 1. O conteúdo exibido varia conforme o papel selecionado no role switcher:
+
+- **DE:** checklist de validações técnicas (ex: export GA4 → BigQuery, User ID cross-platform, exportação de MMP) e queries pré-prontas para diagnóstico de cobertura de UTMs e User ID.
+- **DS:** alertas sobre pontos de atenção relevantes para a etapa de modelagem.
+- **BA:** itens que precisam ser confirmados ou alinhados com o cliente antes de avançar.
+
+Cada item do checklist pode ser marcado como concluído, e o sistema sinaliza automaticamente os riscos de maior criticidade (ALTO / MÉDIO) com base na configuração do projeto.
+
+---
+
+## 3. Diagnóstico
+
+A etapa de Diagnóstico é construída a partir do preenchimento e conclusão das etapas anteriores. Nela são definidos o evento de conversão no GA4, o agrupamento de canais e a lookback window.
+
+Com base nessas informações e no objetivo definido na Etapa 1, o sistema:
+
+- **Recomenda o modelo de atribuição** mais adequado (Markov, Shapley ou comparação entre ambos).
+- **Gera automaticamente as perguntas de EDA** (Análise Exploratória de Dados) que o DS deve responder antes de rodar o modelo — contextualizadas pelos canais ativos, plataformas e objetivo do projeto. Isso já entrega um roteiro de exploração dos dados.
+- **Calcula o período mínimo de extração** com base na lookback window definida.
+
+---
+
+## 4. Construção
+
+A etapa de Construção unifica tudo o que foi preenchido nas etapas anteriores. Ela gera automaticamente:
+
+- **Checklist do DE:** tarefas para construir a base de jornadas, com itens marcados automaticamente como AUTO quando derivados das etapas anteriores (ex: período de extração calculado, unificação GA4 + CRM se CRM estiver ativo).
+- **Checklist do DS:** tarefas de modelagem, incluindo EDA, configuração do Jatoox para Markov, extração de efeito de remoção e versionamento dos notebooks.
+- **Checklist do BA:** tarefas de storytelling e apresentação ao cliente, geradas a partir das perguntas levantadas na Etapa 1.
+- **Query pré-pronta** para construção da base de jornadas no BigQuery.
+
+Uma barra de progresso acompanha o percentual de conclusão das tarefas em tempo real.
+
+---
+
+## Validador (MTA Source Validator)
+
+O Validador é uma função independente, acessível a qualquer momento pelo botão no topo da ferramenta. Seu objetivo é verificar a qualidade das fontes de dados (GA4 e Appsflyer) antes de construir a tabela SOT (Source of Truth) que será utilizada no MTA.
+
+O fluxo funciona em três passos:
+
+**1. Configuração (BA preenche)**
+O BA preenche os parâmetros do cliente: nome do projeto, datasets no GCP, eventos de conversão, mapeamento de variações de canal e os thresholds de qualidade aceitáveis (ex: mínimo de cobertura de user_id, taxa máxima de duplicatas). A ferramenta gera automaticamente o bloco CONFIG Python pronto para uso.
+
+**2. Execução no Colab (DE executa)**
+O DE copia o CONFIG gerado e cola na Célula 2 do notebook no Google Colab. Em seguida, substitui os dados mockados pelas queries reais do BigQuery do cliente (Célula 3) e executa todas as células em ordem. Ao final, roda:
+
+```python
+import json
+print(validator.to_dataframe().to_json(orient='records'))
+```
+
+> **Importante:** o Validador não conecta ao BigQuery diretamente — a conexão com os dados reais do cliente ainda é feita manualmente no Colab pelo DE. A automação completa via API é uma evolução planejada para versões futuras.
+
+**3. Resultado (BA + DE analisam juntos)**
+O DE copia o JSON gerado e cola na aba Resultados da ferramenta. O sistema processa o resultado e exibe:
+
+- Status por dimensão: **PASS**, **WARN** ou **FAIL**
+- Detalhamento de cada check (cobertura temporal, identidade, UTMs, duplicatas, volume e consistência entre fontes)
+- Veredicto geral: se a base está aprovada para construção da SOT ou se há problemas que precisam ser resolvidos antes
+
+Os alertas gerados pelo Validador são propagados automaticamente para as etapas do planejamento, sinalizando os pontos de atenção relevantes para DE, DS e BA.
