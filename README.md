@@ -1,6 +1,6 @@
 # 📊 MTA Planner — DP6
 
-Ferramenta interativa para planejamento e organização de projetos de **Multi-Touch Attribution (MTA)**, estruturada em 4 etapas com geração automática de validações, queries BigQuery e tarefas por área (DE / DS / BA).
+Ferramenta interativa para planejamento e organização de projetos de **Multi-Touch Attribution (MTA)**, estruturada em 4 etapas com geração automática de validações, queries BigQuery e tarefas por área (DE / DS / BA). Inclui o **MTA Source Validator**, módulo independente para verificação da qualidade das fontes de dados antes da construção da SOT.
 
 ---
 
@@ -68,7 +68,7 @@ git commit -m "feat: descrição do que foi alterado"
 git push origin main
 ```
 
-O GitHub Pages atualiza automaticamente em ~1–2 minutos após o push.
+O GitHub Pages atualiza automaticamente em ~1-2 minutos após o push.
 
 ---
 
@@ -86,12 +86,56 @@ O link ficará disponível no topo da mesma página de configuração.
 
 ## 📋 Etapas da ferramenta
 
-| Etapa | Nome | Responsável | O que faz |
+| Etapa | Nome | Responsável principal | O que faz |
 |-------|------|-------------|-----------|
-| 1 | Entrevistas | Todos | Captura contexto de negócio, mídias, plataformas e perguntas do cliente |
-| 2 | Mapeamento | DE | Gera checklist de validações e riscos automaticamente |
-| 3 | Diagnóstico | DE / DS / BA | Agrupamento de canais, lookback window e perguntas da EDA |
-| 4 | Construção | DE / DS / BA | Tarefas por área geradas com base em tudo que foi preenchido |
+| 1 | Entrevistas | Todos | Captura contexto de negócio, objetivo MTA, mídias, plataformas, conversões e perguntas do cliente. Alimenta todas as etapas seguintes automaticamente. |
+| 2 | Mapeamento | DE / BA | Gera checklist de validações, riscos por criticidade e queries BigQuery automaticamente com base na Etapa 1. |
+| 3 | Diagnóstico | DE / DS / BA | Define evento de conversão, agrupamento de canais e lookback window. Recomenda modelo de atribuição e gera roteiro de EDA para o DS. |
+| 4 | Construção | DE / DS / BA | Tarefas por área geradas automaticamente. Query pré-pronta para construção da base de jornadas. |
+
+> O conteúdo de cada etapa é filtrado pelo **role switcher** (DE / DS / BA) no canto superior direito — cada papel vê apenas o que é relevante para sua atuação.
+
+---
+
+## 🔍 MTA Source Validator
+
+Módulo independente acessível pelo botão no topo da ferramenta, a qualquer momento. Verifica a qualidade das fontes de dados (GA4 e Appsflyer) antes de construir a SOT.
+
+### Fluxo
+
+```
+BA preenche a aba Configuracao
+         |
+Ferramenta gera o CONFIG Python automaticamente
+         |
+DE copia o CONFIG → cola na Celula 2 do Colab
+         |
+DE substitui dados mockados pelas queries reais (Celula 3)
+         |
+DE executa todas as celulas em ordem
+         |
+Na ultima celula, roda:
+  import json
+  print(validator.to_dataframe().to_json(orient='records'))
+         |
+DE copia o JSON → cola na aba Resultados
+         |
+Ferramenta renderiza o relatorio (PASS / WARN / FAIL)
+e propaga alertas para as etapas do planejamento
+```
+
+### Dimensões verificadas
+
+| # | Dimensão | Fonte | O que verifica |
+|---|----------|-------|----------------|
+| 1 | Cobertura Temporal | GA4 + Appsflyer | Dias disponíveis e gaps na série |
+| 2 | Cobertura de Identidade | GA4 + Appsflyer | % de user_id preenchido nas conversões |
+| 3 | Qualidade de UTMs | GA4 | % de source nulo e canais não mapeados |
+| 4 | Duplicatas | GA4 | Taxa de eventos duplicados nas conversões |
+| 5 | Volume de Conversões | GA4 | Média de conversões por dia |
+| 6 | Consistência entre Fontes | GA4 x Appsflyer | Divergência de volume por dia |
+
+> **Nota:** a conexão com o BigQuery real é feita manualmente pelo DE no Colab. A automação completa via API é uma evolução planejada.
 
 ---
 
@@ -99,10 +143,13 @@ O link ficará disponível no topo da mesma página de configuração.
 
 A ferramenta gera conteúdo dinamicamente com base nas escolhas da Etapa 1:
 
-- **App + Web selecionados** → validação de User ID cross-platform + query BigQuery
-- **CRM ativo** → tarefa de cruzamento de User ID na base
+- **App + Web selecionados** → validação de User ID cross-platform + query BigQuery + alerta de risco ALTO
+- **CRM ativo** → tarefa de cruzamento de User ID + pergunta de EDA sobre papel do CRM na jornada
 - **Objetivo: Canibalização** → recomendação de Markov + alerta para DS
+- **Objetivo: Awareness** → alerta de lookback estendida + pergunta de EDA sobre canais introdutores
 - **Ciclo de decisão** → lookback window sugerida calculada automaticamente
+- **MMP ativo (Adjust / Appsflyer)** → checklist de exportação para BigQuery + risco CRITICO se ausente
+- **Canal offline** → alerta de identificador necessário para cruzamento
 - **Perguntas do cliente** → viram tarefas automáticas do BA na Etapa 4
 
 ---
@@ -111,7 +158,8 @@ A ferramenta gera conteúdo dinamicamente com base nas escolhas da Etapa 1:
 
 - **Infraestrutura de dados:** Google BigQuery (GA4 export)
 - **Modelos suportados:** Markov Chain, Shapley Value
-- **Projetos de referência:** 
+- **Biblioteca de modelagem:** Jatoox
+- **Notebook de validação:** MTA_Source_Validator.ipynb (Google Colab)
 
 ---
 
@@ -119,18 +167,18 @@ A ferramenta gera conteúdo dinamicamente com base nas escolhas da Etapa 1:
 
 ```
 feat: nova funcionalidade
-fix: correção de bug
-style: ajuste visual sem mudança de lógica
-refactor: refatoração de código
-docs: atualização de documentação
+fix: correcao de bug
+style: ajuste visual sem mudanca de logica
+refactor: refatoracao de codigo
+docs: atualizacao de documentacao
 ```
 
 ---
 
-## 👥 Times
+## 👥 Times e responsabilidades
 
 | Role | Cor | Responsabilidade |
 |------|-----|-----------------|
-| **DE** | Azul | Base de jornada, queries BigQuery, validação de dados |
-| **DS** | Roxo | EDA, execução do modelo (Jatoox), análise de resultados |
-| **BA** | Verde | Perguntas de negócio, storytelling, apresentação ao cliente |
+| **DE** | Azul | Base de jornada, queries BigQuery, validação de dados, execução do Validador |
+| **DS** | Roxo | EDA, execução do modelo (Jatoox), análise de resultados, versionamento de notebooks |
+| **BA** | Verde | Configuração do Validador, perguntas de negócio, storytelling, apresentação ao cliente |
