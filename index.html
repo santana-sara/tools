@@ -1787,7 +1787,10 @@ function updateLookback() {
 // ALERTS (gerados dinamicamente)
 // ===============================================
 function buildAlerts() {
-  const obj = v('f-obj');
+  const objChips = chipsOn('chips-obj');
+  const hasOverlap = objChips.some(o => o.includes('sobreposição'));
+  const hasOtimizar = objChips.some(o => o.includes('Otimizar'));
+  const hasAwareness = objChips.some(o => o.includes('awareness'));
   const marca = v('f-marca');
   const ciclo = v('f-ciclo');
   const hasApp = hasChip('chips-plat','app');
@@ -1797,8 +1800,8 @@ function buildAlerts() {
   const hasMMP = hasChip('chips-mmp','adjust') || hasChip('chips-mmp','appsflyer');
 
   const alerts = [];
-  if (obj === 'canib') alerts.push({ type: 'info', t: 'Objetivo: Canibalização -> Markov recomendado', b: 'DS: a comparação Last Click vs. Markov com efeito de remoção responde diretamente o que o cliente quer. Planeje isso desde já.' });
-  if (obj === 'awareness') alerts.push({ type: 'warn', t: 'Awareness -> lookback provavelmente maior', b: 'Para capturar impacto de canais de awareness, a lookback tende a precisar de 60-90 dias. Valide na EDA.' });
+  if (hasOverlap) alerts.push({ type: 'info', t: 'Objetivo: Sobreposição de audiência -> Markov recomendado', b: 'DS: a comparação Last Click vs. Markov com efeito de remoção responde diretamente o que o cliente quer. Planeje isso desde já.' });
+  if (hasAwareness) alerts.push({ type: 'warn', t: 'Awareness -> lookback provavelmente maior', b: 'Para capturar impacto de canais de awareness, a lookback tende a precisar de 60-90 dias. Valide na EDA.' });
   if (marca === 'consolidada') alerts.push({ type: 'warn', t: 'Marca consolidada -> risco de brand search', b: 'Brand search tende a aparecer como last touch em marcas conhecidas  --  pode ser interpretado como canibalização. Discuta com o cliente antes da EDA.' });
   if (hasApp && hasWeb) alerts.push({ type: 'danger', t: '(!) App + Web -> User ID cross-platform crítico', b: 'DE: valide se o mesmo User ID persiste entre as duas plataformas. Sem isso, o mesmo usuário é contado duas vezes na jornada.' });
   if (hasCRM) alerts.push({ type: 'info', t: 'CRM ativo -> mapear identificador de usuário', b: 'DE: confirme como o CRM identifica o usuário e se é cruzável com o GA4 antes de montar a base.' });
@@ -1818,10 +1821,10 @@ function buildAlerts() {
   const recEl = document.getElementById('e3-model-rec');
   const markovBadge = document.getElementById('markov-rec-badge');
   if (recEl) {
-    if (obj === 'canib') {
+   if (hasOverlap) {
       recEl.innerHTML = `<div class="alert alert-info"><div class="alert-title">💡 DS: Markov Chain recomendado</div><div class="alert-body">O efeito de remoção e a matriz de transição respondem diretamente o objetivo de canibalização definido pelo cliente.</div></div>`;
       if (markovBadge) markovBadge.style.display = 'inline-flex';
-    } else if (obj === 'awareness') {
+    } else if (hasAwareness) {
       recEl.innerHTML = `<div class="alert alert-info"><div class="alert-title">💡 DS: EDA pode ser suficiente</div><div class="alert-body">Para awareness, a análise exploratória da posição dos canais na jornada pode responder as perguntas sem modelagem completa.</div></div>`;
       if (markovBadge) markovBadge.style.display = 'none';
     } else { recEl.innerHTML = ''; if (markovBadge) markovBadge.style.display = 'inline-flex'; }
@@ -1945,7 +1948,9 @@ function buildStage2() {
 function buildStage3() {
   const canal = chipsOn('chips-canal');
   const plat = chipsOn('chips-plat');
-  const obj = v('f-obj');
+  const objChips = chipsOn('chips-obj');
+  const hasOverlap = objChips.some(o => o.includes('sobreposição'));
+  const hasAwareness = objChips.some(o => o.includes('awareness'));
   const lw = document.getElementById('lw-val')?.textContent || '?';
 
   // Canal table
@@ -1975,8 +1980,8 @@ function buildStage3() {
   const hasWeb = hasChip('chips-plat','web');
   if (hasApp && hasWeb) edaQ.push({ t: 'Como se distribui a jornada entre web e app? Há diferença de conversão entre plataformas?', auto: true, role:'ds', reason:'Web + App ativos' });
   if (hasChip('chips-canal','crm')) edaQ.push({ t: 'O CRM aparece como Conversor ou como Engajador? Há canibalização com mídia paga?', auto: true, role:'ds', reason:'CRM é canal ativo' });
-  if (obj === 'canib') edaQ.push({ t: 'Há canibalização entre brand search e performance paga? Brand search aparece como last touch com que frequência?', auto: true, role:'ds', reason:'Objetivo: canibalização' });
-  if (obj === 'awareness') edaQ.push({ t: 'Os canais de awareness aparecem no início da jornada? Com que frequência contribuem para conversões futuras?', auto: true, role:'ds', reason:'Objetivo: justificar awareness' });
+  if (hasOverlap) edaQ.push({ t: 'Há sobreposição de audiência entre brand search e performance paga? Brand search aparece como last touch com que frequência?', auto: true, role:'ds', reason:'Objetivo: analisar sobreposição' });
+  if (hasAwareness) edaQ.push({ t: 'Os canais de awareness aparecem no início da jornada? Com que frequência contribuem para conversões futuras?', auto: true, role:'ds', reason:'Objetivo: justificar awareness' });
   edaQ.push({ t: `Qual a % de jornadas encerradas dentro de ${lw} dias? (calibragem da lookback window)`, auto: false });
   edaQ.push({ t: 'Como o comportamento dos canais difere entre os dois períodos analisados?', auto: false });
 
@@ -2621,4 +2626,5 @@ onInput();
 </script>
 </body>
 </html>
+
 
