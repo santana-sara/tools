@@ -1154,15 +1154,14 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
           </div>
         </div>
         <div class="field" style="margin-top:14px;">
-          <div class="field-label">Objetivo central do MTA <span class="req">*</span> <span class="hint">— o que o cliente quer descobrir?</span></div>
-          <select id="f-obj" onchange="onInput()">
-            <option value="">Selecione o objetivo...</option>
-            <option value="canib">Entender canibalização entre canais</option>
-            <option value="otimizar">Otimizar investimento por canal / funil</option>
-            <option value="awareness">Justificar investimento em awareness</option>
-            <option value="jornada">Entender a jornada completa do usuário</option>
-            <option value="omni">Análise omnichannel (web + app + offline)</option>
-          </select>
+          <div class="field-label">Objetivos do MTA <span class="req">*</span> <span class="hint">— o que o cliente quer descobrir? (pode selecionar múltiplos)</span></div>
+          <div class="chips" id="chips-obj">
+            <div class="chip" onclick="chip(this)" data-val="overlap">Há sobreposição de audiência entre canais?</div>
+            <div class="chip" onclick="chip(this)" data-val="otimizar">Otimizar investimento por canal / funil</div>
+            <div class="chip" onclick="chip(this)" data-val="awareness">Justificar investimento em awareness</div>
+            <div class="chip" onclick="chip(this)" data-val="jornada">Entender a jornada completa do usuário</div>
+            <div class="chip" onclick="chip(this)" data-val="omni">Análise omnichannel (web + app + offline)</div>
+          </div>
         </div>
         <div class="field-grid" style="margin-top:14px;">
           <div class="field">
@@ -2622,3 +2621,4 @@ onInput();
 </script>
 </body>
 </html>
+
