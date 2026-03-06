@@ -1293,7 +1293,7 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
     <!-- Actions -->
     <div class="stage-actions" style="border-radius: var(--r-lg);">
       <div class="actions-left">
-        <span style="font-size:12px; color:var(--text-3);" id="ft1-msg">Preencha cliente e objetivo para avançar</span>
+        <button class="btn btn-primary" onclick="salvarProjetoNoSheets()">💾 Salvar no Sheets</button>
       </div>
       <button class="btn btn-primary" onclick="goTo(2)">Avançar para Mapeamento →</button>
     </div>
@@ -2621,11 +2621,48 @@ function addChip(inputId, chipsId) {
   inp.value = '';
   onInput();
 }
+  
+// ===============================================
+// INTEGRAÇÃO GOOGLE SHEETS
+// ===============================================
+const URL_APPS_SCRIPT = "https://script.google.com/a/macros/dp6.com.br/s/AKfycbwdQ9G-aY8fUBEzboWXHR-g260PjCj_rZh_M5q1XaX4PcfDSUof8KDDZMkNQbIWJPVFSA/exec";
+
+async function salvarProjetoNoSheets() {
+  const dadosDoProjeto = {
+    cliente: v('f-cliente'),
+    produto: v('f-produto'),
+    objetivos: chipsOn('chips-obj').join(', '),
+    ciclo: v('f-ciclo'),
+    maturidade: v('f-marca'),
+    conversoes: chipsOn('chips-conv').join(', '),
+    canais: chipsOn('chips-canal').join(', '),
+    plataformas: chipsOn('chips-plat').join(', ')
+  };
+
+  if (!dadosDoProjeto.cliente) {
+    alert("Por favor, preencha o nome do cliente antes de salvar.");
+    return;
+  }
+
+  try {
+    const response = await fetch(URL_APPS_SCRIPT, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dadosDoProjeto)
+    });
+    alert("Projeto salvo com sucesso na planilha!");
+  } catch (error) {
+    console.error("Erro ao salvar:", error);
+    alert("Houve um erro ao tentar salvar o projeto.");
+  }
+}
 
 onInput();
 </script>
 </body>
 </html>
+
 
 
 
