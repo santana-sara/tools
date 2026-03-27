@@ -1342,6 +1342,182 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
       <div class="card-footer">💡 Cada canal e plataforma selecionada gera automaticamente validações, riscos e queries para o DE nas próximas etapas</div>
     </div>
 
+    <!-- ══ CONFIGURAÇÃO DE AMBIENTE — PIPELINE DATAFORM ══ -->
+    <div class="card" id="dt-card" style="margin-top:16px;">
+      <div class="card-head" onclick="toggleDTCard()" style="cursor:pointer;user-select:none;">
+        <div>
+          <div class="card-title">⚙️ Configuração de Ambiente — Pipeline Dataform</div>
+          <div class="card-desc">Gera o comando de deploy do martech-toolkit com os parâmetros da Etapa 1</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-de">DE</span>
+          <span id="dt-chevron" style="font-size:12px;color:var(--text-3);transition:transform .2s;">▼</span>
+        </div>
+      </div>
+
+      <div id="dt-body" style="display:none;">
+
+        <!-- Auto-preenchidos -->
+        <div class="card-section">
+          <div class="card-section-label">Herdado da Etapa 1 <span class="badge badge-auto" style="margin-left:4px;">✨ AUTO</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 16px;">
+            <div class="field">
+              <div class="field-label">GCP Project ID</div>
+              <input type="text" id="dt-auto-project" readonly tabindex="-1" style="background:var(--surface-2);color:var(--text-2);cursor:default;" placeholder="— preencha o Validator —">
+            </div>
+            <div class="field">
+              <div class="field-label">GA4 Raw Dataset</div>
+              <input type="text" id="dt-auto-ga4" readonly tabindex="-1" style="background:var(--surface-2);color:var(--text-2);cursor:default;" placeholder="— preencha o Validator —">
+            </div>
+            <div class="field">
+              <div class="field-label">Lookback Days</div>
+              <input type="text" id="dt-auto-lw" readonly tabindex="-1" style="background:var(--surface-2);color:var(--text-2);cursor:default;" placeholder="—">
+            </div>
+          </div>
+        </div>
+
+        <!-- Google Ads -->
+        <div class="card-section">
+          <div class="card-section-label">Google Ads</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 16px;">
+            <div class="field">
+              <div class="field-label">Ads Raw Dataset</div>
+              <input type="text" id="dt-ads-dataset" value="RAW_SRC_ADS_EXTERNAL" oninput="buildDeployCommand()">
+            </div>
+            <div class="field">
+              <div class="field-label">Ads Table <span class="hint">— inclui o Customer ID</span></div>
+              <input type="text" id="dt-ads-table" placeholder="ad_CampaignBasicStats_XXXXXXX" oninput="buildDeployCommand()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Schemas -->
+        <div class="card-section">
+          <div class="card-section-label">Schemas BigQuery</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 16px;">
+            <div class="field">
+              <div class="field-label">Silver Schema</div>
+              <input type="text" id="dt-silver" value="TRUSTED" oninput="buildDeployCommand()">
+            </div>
+            <div class="field">
+              <div class="field-label">Refined Schema</div>
+              <input type="text" id="dt-refined" value="REFINED" oninput="buildDeployCommand()">
+            </div>
+            <div class="field">
+              <div class="field-label">Quality Schema</div>
+              <input type="text" id="dt-quality" value="QUALITY" oninput="buildDeployCommand()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Ambiente -->
+        <div class="card-section">
+          <div class="card-section-label">Ambiente GCP</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 16px;">
+            <div class="field">
+              <div class="field-label">Deployment Flavor</div>
+              <select id="dt-flavor" oninput="buildDeployCommand()" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text);font-size:13px;">
+                <option value="full">full</option>
+                <option value="marketing">marketing</option>
+                <option value="retail">retail</option>
+                <option value="quality">quality</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="field-label">Service Region</div>
+              <input type="text" id="dt-region" value="us-central1" oninput="buildDeployCommand()">
+            </div>
+            <div class="field">
+              <div class="field-label">Data Location</div>
+              <input type="text" id="dt-location" value="US" oninput="buildDeployCommand()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Avançado (nomes das tabelas) -->
+        <div class="card-section">
+          <div class="card-section-label" onclick="toggleDTAdv()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+            <span>Nomes das Tabelas <span style="font-size:10px;color:var(--text-3);font-weight:400;">(avançado — altere só se customizou o martech-toolkit)</span></span>
+            <span id="dt-adv-chevron" style="font-size:11px;color:var(--text-3);">▶</span>
+          </div>
+          <div id="dt-adv-body" style="display:none;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 16px;">
+              <div class="field">
+                <div class="field-label">Fact Table GA4 (silver)</div>
+                <input type="text" id="dt-ft-ga4" value="FT_SIL_GA4_EVENTS" oninput="buildDeployCommand()">
+              </div>
+              <div class="field">
+                <div class="field-label">Fact Table Ads (silver)</div>
+                <input type="text" id="dt-ft-ads" value="FT_SIL_ADS_PERFORMANCE" oninput="buildDeployCommand()">
+              </div>
+              <div class="field">
+                <div class="field-label">DM Gold Marketing</div>
+                <input type="text" id="dt-dm-mkt" value="DM_GOLD_MARKETING_PERFORMANCE" oninput="buildDeployCommand()">
+              </div>
+              <div class="field">
+                <div class="field-label">DM Gold Retail</div>
+                <input type="text" id="dt-dm-retail" value="DM_GOLD_RETAIL_CUBE" oninput="buildDeployCommand()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Autenticação -->
+        <div class="card-section">
+          <div class="card-section-label">Autenticação</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 16px;">
+            <div class="field" style="grid-column:1/-1;">
+              <div class="field-label">GitHub Token <span class="hint">— usado pelo Dataform para acessar o repositório</span></div>
+              <input type="password" id="dt-git-token" placeholder="ghp_..." oninput="buildDeployCommand()">
+            </div>
+            <div class="field" style="grid-column:1/-1;">
+              <div class="field-label">E-mail de Notificação</div>
+              <input type="text" id="dt-email" placeholder="time@dp6.com.br" oninput="buildDeployCommand()">
+            </div>
+            <div class="field">
+              <div class="field-label">SMTP User</div>
+              <input type="text" id="dt-email-user" placeholder="smtp-user@empresa.com" oninput="buildDeployCommand()">
+            </div>
+            <div class="field">
+              <div class="field-label">SMTP Password</div>
+              <input type="password" id="dt-email-pass" placeholder="••••••••" oninput="buildDeployCommand()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Saída gerada -->
+        <div class="card-section">
+          <div class="card-section-label">Comando gerado</div>
+          <div style="padding:10px 16px;display:flex;flex-direction:column;gap:12px;">
+
+            <!-- deploy.sh -->
+            <div>
+              <div class="query-head">
+                <div style="font-size:12px;font-weight:700;color:var(--text-2);">deploy.sh</div>
+                <button class="copy-btn" onclick="copyQuery(this)">📋 Copiar</button>
+              </div>
+              <div class="code-block" id="dt-deploy-output" data-raw="" style="font-size:12px;line-height:1.7;">
+                <span class="cm"># Preencha os campos acima para gerar o comando</span>
+              </div>
+            </div>
+
+            <!-- workflow_settings.yaml -->
+            <div>
+              <div class="query-head">
+                <div style="font-size:12px;font-weight:700;color:var(--text-2);">workflow_settings.yaml <span style="font-size:10px;font-weight:400;color:var(--text-3);">— vars override</span></div>
+                <button class="copy-btn" onclick="copyQuery(this)">📋 Copiar</button>
+              </div>
+              <div class="code-block" id="dt-yaml-output" data-raw="" style="font-size:12px;line-height:1.7;">
+                <span class="cm"># Preencha os campos acima para gerar o YAML</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /dt-body -->
+    </div><!-- /dt-card -->
+
     <!-- Actions -->
     <div class="stage-actions" style="border-radius: var(--r-lg);">
       <div class="actions-left">
@@ -1833,6 +2009,14 @@ function saveState() {
     dismissedQs: [..._dismissedQs],
     vcProject: v('vc-project'), vcGa4: v('vc-ga4'), vcAf: v('vc-af'),
     activeTpl: document.querySelector('.tpl-btn.tpl-active')?.dataset?.tpl || '',
+    dt: {
+      flavor:    v('dt-flavor'),    adsDs:    v('dt-ads-dataset'), adsTable: v('dt-ads-table'),
+      silver:    v('dt-silver'),    refined:  v('dt-refined'),     quality:  v('dt-quality'),
+      ftGa4:     v('dt-ft-ga4'),    ftAds:    v('dt-ft-ads'),
+      dmMkt:     v('dt-dm-mkt'),    dmRetail: v('dt-dm-retail'),
+      region:    v('dt-region'),    location: v('dt-location'),
+      email:     v('dt-email'),     emailUser:v('dt-email-user'),
+    },
   };
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
 }
@@ -1901,6 +2085,23 @@ function restoreState() {
   // Restore active template badge
   if (state.activeTpl) {
     document.querySelector(`.tpl-btn[data-tpl="${state.activeTpl}"]`)?.classList.add('tpl-active');
+  }
+
+  // Restore Dataform config fields
+  if (state.dt) {
+    const dtMap = {
+      'dt-flavor': state.dt.flavor,     'dt-ads-dataset': state.dt.adsDs,
+      'dt-ads-table': state.dt.adsTable,'dt-silver': state.dt.silver,
+      'dt-refined': state.dt.refined,   'dt-quality': state.dt.quality,
+      'dt-ft-ga4': state.dt.ftGa4,      'dt-ft-ads': state.dt.ftAds,
+      'dt-dm-mkt': state.dt.dmMkt,      'dt-dm-retail': state.dt.dmRetail,
+      'dt-region': state.dt.region,     'dt-location': state.dt.location,
+      'dt-email': state.dt.email,       'dt-email-user': state.dt.emailUser,
+    };
+    Object.entries(dtMap).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el && val) el.value = val;
+    });
   }
 
   onInput();
@@ -2171,6 +2372,112 @@ function getProjectParams() {
 // ===============================================
 // DIAGNÓSTICO DE COMPLEXIDADE
 // ===============================================
+// ===============================================
+// CONFIGURAÇÃO DE AMBIENTE — PIPELINE DATAFORM
+// ===============================================
+function toggleDTCard() {
+  const body = document.getElementById('dt-body');
+  const ch   = document.getElementById('dt-chevron');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  ch.style.transform = open ? '' : 'rotate(180deg)';
+  if (!open) buildDeployCommand();
+}
+
+function toggleDTAdv() {
+  const body = document.getElementById('dt-adv-body');
+  const ch   = document.getElementById('dt-adv-chevron');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  ch.textContent = open ? '▶' : '▼';
+}
+
+function buildDeployCommand() {
+  const g    = id => (document.getElementById(id)?.value || '').trim();
+  const gTxt = id => (document.getElementById(id)?.textContent || '').trim().replace(/[^0-9]/g, '');
+
+  // Auto-fill display fields from Etapa 1
+  const project  = g('vc-project')  || '';
+  const ga4ds    = g('vc-ga4')      || 'RAW_SRC_GA4_EXTERNAL';
+  const lwDays   = gTxt('lw-val')   || '3';
+  const setRO = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+  setRO('dt-auto-project', project || '— preencha o Validator —');
+  setRO('dt-auto-ga4',     ga4ds);
+  setRO('dt-auto-lw',      lwDays);
+
+  // Collect all params
+  const token     = g('dt-git-token')  || '<GIT_TOKEN>';
+  const flavor    = g('dt-flavor')     || 'full';
+  const adsDs     = g('dt-ads-dataset')|| 'RAW_SRC_ADS_EXTERNAL';
+  const adsTable  = g('dt-ads-table')  || 'ad_CampaignBasicStats_XXXXXXX';
+  const silver    = g('dt-silver')     || 'TRUSTED';
+  const refined   = g('dt-refined')    || 'REFINED';
+  const quality   = g('dt-quality')    || 'QUALITY';
+  const ftGa4     = g('dt-ft-ga4')     || 'FT_SIL_GA4_EVENTS';
+  const ftAds     = g('dt-ft-ads')     || 'FT_SIL_ADS_PERFORMANCE';
+  const dmMkt     = g('dt-dm-mkt')     || 'DM_GOLD_MARKETING_PERFORMANCE';
+  const dmRetail  = g('dt-dm-retail')  || 'DM_GOLD_RETAIL_CUBE';
+  const region    = g('dt-region')     || 'us-central1';
+  const location  = g('dt-location')  || 'US';
+  const email     = g('dt-email')      || '<NOTIFICATION_EMAIL>';
+  const emailUser = g('dt-email-user') || '<EMAIL_USER>';
+  const emailPass = g('dt-email-pass') || '<EMAIL_PASSWORD>';
+
+  const proj = project || '<PROJECT_ID>';
+
+  // ── deploy.sh command ──
+  const deployRaw = `./deploy.sh \\
+  "${token}" \\
+  "${flavor}" \\
+  "${ga4ds}" \\
+  "${adsDs}" \\
+  "${adsTable}" \\
+  "${silver}" \\
+  "${refined}" \\
+  "${ftGa4}" \\
+  "${ftAds}" \\
+  "${dmMkt}" \\
+  "${dmRetail}" \\
+  "${region}" \\
+  "${location}" \\
+  "${email}" \\
+  "${emailUser}" \\
+  "${emailPass}"`;
+
+  const hlBash = s => s
+    .replace(/(&|<|>)/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))
+    .replace(/(#.*)/g,        '<span class="cm">$1</span>')
+    .replace(/(\.\/deploy\.sh)/g, '<span class="fn">$1</span>')
+    .replace(/("([^"]*)"|'([^']*)')/g, '<span class="str">$1</span>')
+    .replace(/\\\\/g, '<span class="kw">\\</span>');
+
+  // ── workflow_settings.yaml ──
+  const yamlRaw = `vars:
+  flavor: "${flavor}"
+  silver_schema: "${silver}"
+  refined_schema: "${refined}"
+  quality_schema: "${quality}"
+  raw_ga4_dataset: "${ga4ds}"
+  raw_ads_dataset: "${adsDs}"
+  raw_ads_table: "${adsTable}"
+  lookback_days: "${lwDays}"`;
+
+  const hlYaml = s => s
+    .replace(/(&|<|>)/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))
+    .replace(/(#.*)/g, '<span class="cm">$1</span>')
+    .replace(/^(\s*)([\w_]+)(:)/gm, '$1<span class="kw">$2</span><span class="cm">$3</span>')
+    .replace(/"([^"]*)"/g, '<span class="str">"$1"</span>');
+
+  const setOut = (id, raw, html) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.dataset.raw = encodeURIComponent(raw);
+    el.innerHTML   = html;
+  };
+  setOut('dt-deploy-output', deployRaw, hlBash(deployRaw));
+  setOut('dt-yaml-output',   yamlRaw,   hlYaml(yamlRaw));
+}
+
 function buildDiagnosis() {
   const el = document.getElementById('diag-card');
   if (!el) return;
@@ -2378,6 +2685,7 @@ function onInput() {
   buildAlerts();
   buildDiagnosis();
   buildClientQuestions();
+  buildDeployCommand();
   saveState();
 }
 
