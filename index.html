@@ -732,6 +732,27 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
 }
 .q-input:focus { border: none !important; box-shadow: none !important; }
 
+/* ── AUTO-GENERATED CLIENT QUESTIONS ─────── */
+.q-auto-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 16px; border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.q-auto-item:last-child { border-bottom: none; }
+.q-auto-text { flex: 1; font-size: 13px; color: var(--text); line-height: 1.45; }
+.q-tag {
+  font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px;
+  padding: 2px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+}
+.q-tag-std { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-border); }
+.q-tag-ctx { background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; }
+.dark .q-tag-ctx { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+.q-dismiss {
+  background: none; border: none; cursor: pointer; color: var(--text-3);
+  font-size: 16px; line-height: 1; padding: 0 2px; opacity: .45; transition: opacity .15s; flex-shrink: 0;
+}
+.q-dismiss:hover { opacity: 1; color: var(--danger); }
+
 /* ══════════════════════════════════════════
    STAGE VISIBILITY
 ══════════════════════════════════════════ */
@@ -881,6 +902,12 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
 .thr-name { font-size: 12px; font-weight: 600; color: var(--text); }
 .thr-desc { font-size: 11px; color: var(--text-3); margin-top: 2px; }
 .thr-input { width: 72px; font-size: 12px; text-align: right; }
+
+/* ── TEMPLATES ── */
+.tpl-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+.tpl-btn { padding: 7px 14px; border-radius: var(--r-sm); border: 1.5px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all .12s; }
+.tpl-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+.tpl-btn.tpl-active { border-color: var(--blue); background: var(--blue-light); color: var(--blue); box-shadow: 0 0 0 2px rgba(27,79,216,.15); }
 
 </style>
 </head>
@@ -1129,6 +1156,26 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
       </div>
     </div>
 
+    <!-- Templates por vertical -->
+    <div class="card">
+      <div class="card-head" style="padding:12px 16px;">
+        <div>
+          <div class="card-title" style="font-size:13px;"><div class="card-title-icon">⚡</div>Templates por Vertical</div>
+          <div class="card-desc">Pré-configura toda a Etapa 1 com um clique — ajuste o que for necessário depois</div>
+        </div>
+      </div>
+      <div style="padding:14px 16px;">
+        <div class="tpl-strip">
+          <button class="tpl-btn" data-tpl="financeiro" onclick="applyTemplate('financeiro')">🏦 Financeiro</button>
+          <button class="tpl-btn" data-tpl="ecommerce"  onclick="applyTemplate('ecommerce')">🛒 E-commerce</button>
+          <button class="tpl-btn" data-tpl="apponly"    onclick="applyTemplate('apponly')">📱 App-only</button>
+          <button class="tpl-btn" data-tpl="portal"     onclick="applyTemplate('portal')">📰 Portal / Publisher</button>
+          <button class="tpl-btn" data-tpl="b2b"        onclick="applyTemplate('b2b')">🏢 SaaS / B2B</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:8px;">💡 O nome do cliente não é alterado — só os campos de configuração são pré-preenchidos</div>
+      </div>
+    </div>
+
     <!-- Negócio -->
     <div class="card">
       <div class="card-head">
@@ -1276,14 +1323,19 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
       </div>
 
       <div class="card-section">
-        <div class="card-section-label">Perguntas do cliente <span class="badge badge-ba" style="margin-left:4px;">BA</span></div>
-        <div id="q-list">
-          <div class="q-row"><div class="q-num">1</div><input class="q-input" type="text" placeholder="O que o cliente quer descobrir?" oninput="onInput()"></div>
-          <div class="q-row"><div class="q-num">2</div><input class="q-input" type="text" placeholder="Digite outra pergunta..." oninput="onInput()"></div>
-          <div class="q-row"><div class="q-num">3</div><input class="q-input" type="text" value="O CRM está sendo canibalizado por mídia paga no last touch?" oninput="onInput()"></div>
+        <div class="card-section-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <div>Perguntas ao cliente <span class="badge badge-ba" style="margin-left:4px;">BA</span></div>
+          <button id="q-restore-btn" class="btn btn-ghost" style="font-size:10px;padding:2px 8px;display:none;" onclick="restoreAllQs()">↺ Restaurar dispensadas</button>
         </div>
+        <!-- Perguntas automáticas (padrão MTA + contextuais) -->
+        <div id="q-auto-list"></div>
+        <!-- Perguntas personalizadas (input manual) -->
+        <div style="padding:6px 16px 2px;border-top:1px dashed var(--border);margin-top:4px;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.6px;">Personalizadas</div>
+        </div>
+        <div id="q-manual-list"></div>
         <div style="padding:10px 16px;">
-          <button class="btn btn-ghost" style="font-size:12px; padding:5px 12px;" onclick="addQ()">+ Pergunta</button>
+          <button class="btn btn-ghost" style="font-size:12px; padding:5px 12px;" onclick="addQ()">+ Pergunta personalizada</button>
         </div>
       </div>
 
@@ -1294,6 +1346,7 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
     <div class="stage-actions" style="border-radius: var(--r-lg);">
       <div class="actions-left">
         <button class="btn btn-primary" onclick="salvarProjetoNoSheets()">💾 Salvar no Sheets</button>
+        <button class="btn btn-ghost" onclick="exportPlan()">📄 Exportar .md</button>
       </div>
       <button class="btn btn-primary" onclick="goTo(2)">Avançar para Mapeamento →</button>
     </div>
@@ -1329,6 +1382,17 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
       <div class="mini-card">
         <div class="mini-val" id="sum-plat">2</div>
         <div class="mini-label">plataformas</div>
+      </div>
+    </div>
+
+    <!-- Diagnóstico de complexidade -->
+    <div class="card">
+      <div class="card-head" style="padding:12px 16px;">
+        <div class="card-title" style="font-size:13px;"><div class="card-title-icon">🎯</div>Perfil de Complexidade</div>
+        <span class="badge badge-auto">✨ AUTO</span>
+      </div>
+      <div style="padding:12px 14px;" id="diag-card">
+        <div style="text-align:center;padding:8px;color:var(--text-3);font-size:12px;">Preencha os campos para ver o diagnóstico</div>
       </div>
     </div>
 
@@ -1555,6 +1619,19 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
   <!-- SIDEBAR -->
   <div class="sidebar-right">
     <div class="alerts-stack" id="alerts-3"></div>
+    <div class="ds-panel">
+      <div class="card" style="border-color:var(--ds-border);">
+        <div class="card-head" style="background:var(--ds-bg);border-color:var(--ds-border);padding:12px 14px;">
+          <div>
+            <div class="card-title" style="color:var(--ds);font-size:13px;">🐍 Scripts EDA (DS)</div>
+            <div class="card-desc" style="color:var(--ds);opacity:.7;">Prontos para copiar no Colab</div>
+          </div>
+          <span class="badge badge-ds">DS</span>
+        </div>
+        <div id="e3-py-scripts"></div>
+      </div>
+    </div>
+
     <div class="de-panel">
       <div class="query-block">
         <div class="query-head">
@@ -1647,35 +1724,7 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
 
   <!-- SIDEBAR -->
   <div class="sidebar-right">
-    <div class="de-panel">
-      <div class="query-block">
-        <div class="query-head">
-          <div class="query-head-info">
-            <div class="query-name">Base de Jornadas</div>
-            <div class="query-desc">Eventos → uma linha por jornada</div>
-          </div>
-        </div>
-        <div class="query-code"><span class="cm">-- Montar base de jornadas</span>
-<span class="kw">SELECT</span>
-  user_id,
-  <span class="fn">STRING_AGG</span>(
-    canal_agrupado,
-    <span class="str">' > '</span>
-    <span class="kw">ORDER BY</span> event_timestamp
-  ) <span class="kw">AS</span> jornada,
-  <span class="fn">MAX</span>(is_conversion) <span class="kw">AS</span> converteu,
-  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> touchpoints,
-  <span class="fn">DATE_DIFF</span>(
-    <span class="fn">MAX</span>(event_date),
-    <span class="fn">MIN</span>(event_date),
-    <span class="kw">DAY</span>
-  ) <span class="kw">AS</span> duracao_dias
-<span class="kw">FROM</span> sessions_agrupadas
-<span class="kw">WHERE</span> event_date <span class="kw">BETWEEN</span>
-  <span class="str">'DATA_INICIO'</span> <span class="kw">AND</span> <span class="str">'DATA_FIM'</span>
-<span class="kw">GROUP BY</span> user_id</div>
-      </div>
-    </div>
+    <div class="de-panel" id="e4-sot-wrap"></div>
     <div class="alerts-stack" id="alerts-4"></div>
   </div>
 
@@ -1687,6 +1736,265 @@ textarea { resize: vertical; min-height: 72px; line-height: 1.55; }
 // STATE
 // ===============================================
 const S = { role: 'de', stage: 1 };
+
+// ===============================================
+// TEMPLATES POR VERTICAL
+// ===============================================
+const TEMPLATES = {
+  financeiro: {
+    ciclo: 'longo', marca: 'crescimento',
+    obj:   ['Há sobreposição de audiência entre canais?', 'Entender a jornada completa do usuário'],
+    conv:  ['Abertura de conta'],
+    canal: ['Google Ads', 'Meta Ads', 'CRM / E-mail'],
+    plat:  ['🌐 Web', '📱 App'],
+    login: ['✓ Sim'], mmp: ['AppsFlyer'], bq: ['✓ Sim'],
+  },
+  ecommerce: {
+    ciclo: 'curto', marca: 'consolidada',
+    obj:   ['Otimizar investimento por canal / funil'],
+    conv:  ['Finalização de compra'],
+    canal: ['Google Ads', 'Meta Ads', 'Afiliados', 'CRM / E-mail'],
+    plat:  ['🌐 Web'],
+    login: ['Não / Parcial'], mmp: ['Não usa MMP'], bq: ['✓ Sim'],
+  },
+  apponly: {
+    ciclo: 'curto', marca: 'crescimento',
+    obj:   ['Entender a jornada completa do usuário', 'Otimizar investimento por canal / funil'],
+    conv:  ['Instalação de app'],
+    canal: ['Google Ads', 'Meta Ads'],
+    plat:  ['📱 App'],
+    login: ['✓ Sim'], mmp: ['AppsFlyer'], bq: ['✓ Sim'],
+  },
+  portal: {
+    ciclo: 'medio', marca: 'consolidada',
+    obj:   ['Justificar investimento em awareness', 'Entender a jornada completa do usuário'],
+    conv:  ['Cadastro / Registro'],
+    canal: ['Google Ads', 'Display / Programático', 'YouTube', 'CRM / E-mail'],
+    plat:  ['🌐 Web'],
+    login: ['Não / Parcial'], mmp: ['Não usa MMP'], bq: ['✓ Sim'],
+  },
+  b2b: {
+    ciclo: 'muito-longo', marca: 'nicho',
+    obj:   ['Entender a jornada completa do usuário', 'Otimizar investimento por canal / funil'],
+    conv:  ['Geração de lead', 'Contato com vendedor'],
+    canal: ['Google Ads', 'CRM / E-mail'],
+    plat:  ['🌐 Web'],
+    login: ['✓ Sim'], mmp: ['Não usa MMP'], bq: ['✓ Sim'],
+  },
+};
+
+function applyTemplate(key) {
+  const tpl = TEMPLATES[key];
+  if (!tpl) return;
+
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  setEl('f-ciclo', tpl.ciclo);
+  setEl('f-marca', tpl.marca);
+
+  const setChips = (groupId, onTexts) => {
+    document.querySelectorAll('#' + groupId + ' .chip').forEach(c => {
+      const txt = c.textContent.replace(/\s*×\s*$/, '').trim();
+      c.classList.toggle('on', onTexts.includes(txt));
+    });
+  };
+  setChips('chips-obj',   tpl.obj   || []);
+  setChips('chips-conv',  tpl.conv  || []);
+  setChips('chips-canal', tpl.canal || []);
+  setChips('chips-plat',  tpl.plat  || []);
+  setChips('chips-login', tpl.login || []);
+  setChips('chips-mmp',   tpl.mmp   || []);
+  setChips('chips-bq',    tpl.bq    || []);
+
+  document.querySelectorAll('.tpl-btn').forEach(b => b.classList.remove('tpl-active'));
+  document.querySelector(`.tpl-btn[data-tpl="${key}"]`)?.classList.add('tpl-active');
+  onInput();
+}
+
+// ===============================================
+// PERSISTÊNCIA LOCAL (localStorage)
+// ===============================================
+const STORAGE_KEY = 'mta_planner_v2';
+
+function saveState() {
+  const cleanText = c => c.textContent.replace(/\s*×\s*$/, '').trim();
+  const getOn  = id => [...document.querySelectorAll('#' + id + ' .chip.on')].map(cleanText);
+  const getCust = id => [...document.querySelectorAll('#' + id + ' .custom-chip')].map(cleanText);
+
+  const state = {
+    cliente: v('f-cliente'), produto: v('f-produto'),
+    ciclo: v('f-ciclo'),     marca: v('f-marca'),
+    obj:   getOn('chips-obj'),   conv:  getOn('chips-conv'),
+    canal: getOn('chips-canal'), plat:  getOn('chips-plat'),
+    login: getOn('chips-login'), mmp:   getOn('chips-mmp'),
+    bq:    getOn('chips-bq'),
+    convCust:  getCust('chips-conv'),
+    canalCust: getCust('chips-canal'),
+    questions: [...document.querySelectorAll('#q-manual-list .q-input')].map(i => i.value),
+    dismissedQs: [..._dismissedQs],
+    vcProject: v('vc-project'), vcGa4: v('vc-ga4'), vcAf: v('vc-af'),
+    activeTpl: document.querySelector('.tpl-btn.tpl-active')?.dataset?.tpl || '',
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function addChipRaw(val, chipsId) {
+  const container = document.getElementById(chipsId);
+  if (!container || !val) return;
+  const existing = [...container.querySelectorAll('.chip')]
+    .map(c => c.textContent.replace(/\s*×\s*$/, '').trim().toLowerCase());
+  if (existing.includes(val.toLowerCase())) return;
+  const chipEl = document.createElement('div');
+  chipEl.className = 'chip on custom-chip';
+  chipEl.textContent = val;
+  chipEl.onclick = function() { this.classList.toggle('on'); onInput(); saveState(); };
+  const rm = document.createElement('span');
+  rm.textContent = ' ×'; rm.style.cssText = 'opacity:.5;cursor:pointer;margin-left:2px;font-size:13px;';
+  rm.onclick = function(e) { e.stopPropagation(); chipEl.remove(); onInput(); saveState(); };
+  chipEl.appendChild(rm);
+  container.appendChild(chipEl);
+}
+
+function restoreState() {
+  let state;
+  try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e) { return; }
+  if (!state) return;
+
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+  setEl('f-cliente', state.cliente); setEl('f-produto', state.produto);
+  setEl('f-ciclo',   state.ciclo);   setEl('f-marca',   state.marca);
+  setEl('vc-project', state.vcProject); setEl('vc-ga4', state.vcGa4); setEl('vc-af', state.vcAf);
+
+  // Recreate custom chips first
+  (state.convCust  || []).forEach(v => addChipRaw(v, 'chips-conv'));
+  (state.canalCust || []).forEach(v => addChipRaw(v, 'chips-canal'));
+
+  const restoreChips = (id, onTexts) => {
+    if (!onTexts) return;
+    document.querySelectorAll('#' + id + ' .chip').forEach(c => {
+      const txt = c.textContent.replace(/\s*×\s*$/, '').trim();
+      c.classList.toggle('on', onTexts.includes(txt));
+    });
+  };
+  restoreChips('chips-obj',   state.obj);
+  restoreChips('chips-conv',  state.conv);
+  restoreChips('chips-canal', state.canal);
+  restoreChips('chips-plat',  state.plat);
+  restoreChips('chips-login', state.login);
+  restoreChips('chips-mmp',   state.mmp);
+  restoreChips('chips-bq',    state.bq);
+
+  // Restore dismissed questions set
+  if (state.dismissedQs && state.dismissedQs.length) {
+    _dismissedQs = new Set(state.dismissedQs);
+  }
+
+  // Restore manual questions
+  if (state.questions && state.questions.length) {
+    const qList = document.getElementById('q-manual-list');
+    const existing = [...qList.querySelectorAll('.q-input')];
+    state.questions.forEach((q, i) => {
+      if (i < existing.length) { existing[i].value = q; }
+      else { addQ(); qList.querySelectorAll('.q-input')[i].value = q; }
+    });
+  }
+
+  // Restore active template badge
+  if (state.activeTpl) {
+    document.querySelector(`.tpl-btn[data-tpl="${state.activeTpl}"]`)?.classList.add('tpl-active');
+  }
+
+  onInput();
+}
+
+// ===============================================
+// EXPORTAÇÃO DO PLANEJAMENTO (.md)
+// ===============================================
+function exportPlan() {
+  const cliente = v('f-cliente') || 'Projeto';
+  const produto = v('f-produto');
+  const ciclo   = v('f-ciclo');
+  const marca   = v('f-marca');
+  const lw      = document.getElementById('lw-val')?.textContent?.trim() || '?';
+  const convEvt = v('f-conv-evt');
+  const date    = new Date().toLocaleDateString('pt-BR');
+
+  const row = (k, val) => val ? `| ${k} | ${val} |\n` : '';
+  const checkRows = (sel) => [...document.querySelectorAll(sel)].map(r => {
+    const done = r.classList.contains('checked');
+    const txt  = r.querySelector('.check-text')?.textContent?.trim() || '';
+    return txt ? `- [${done ? 'x' : ' '}] ${txt}` : '';
+  }).filter(Boolean).join('\n');
+
+  let md = `# MTA Planner — ${cliente}\n> Exportado em ${date} via MTA Planner DP6\n\n---\n\n`;
+
+  // Etapa 1
+  md += `## Etapa 1 — Entrevistas\n\n`;
+  md += `| Campo | Valor |\n|---|---|\n`;
+  md += row('Cliente', cliente) + row('Produto / Serviço', produto);
+  md += row('Objetivos', chipsOn('chips-obj').join('; '));
+  md += row('Ciclo de decisão', ciclo) + row('Maturidade da marca', marca);
+  md += row('Canais ativos', chipsOn('chips-canal').join(', '));
+  md += row('Plataformas', chipsOn('chips-plat').join(', '));
+  md += row('Conversões', chipsOn('chips-conv').join(', '));
+  md += row('MMP', chipsOn('chips-mmp').join(', '));
+  md += row('Lookback sugerida', lw + ' dias') + '\n';
+
+  const qsAuto   = [...document.querySelectorAll('#q-auto-list .q-auto-text')].map(el => el.textContent.trim());
+  const qsManual = [...document.querySelectorAll('#q-manual-list .q-input')].map(i => i.value.trim()).filter(Boolean);
+  const qs = [...qsAuto, ...qsManual];
+  if (qs.length) {
+    md += `### Perguntas ao cliente\n`;
+    qs.forEach((q, i) => md += `${i + 1}. ${q}\n`);
+    md += '\n';
+  }
+
+  // Etapa 2
+  md += `## Etapa 2 — Mapeamento\n\n### Validações de maturidade de dados\n`;
+  md += checkRows('#e2-checklist .check-row') + '\n\n';
+
+  // Etapa 3
+  md += `## Etapa 3 — Diagnóstico\n\n`;
+  md += `| Campo | Valor |\n|---|---|\n`;
+  md += row('Evento de conversão', convEvt) + row('Lookback window', (v('f-lw-input') || lw) + ' dias') + '\n';
+
+  md += `### Agrupamento de canais\n`;
+  [...document.querySelectorAll('#e3-ch-table tbody tr')].forEach(tr => {
+    const cells = [...tr.querySelectorAll('td')];
+    if (cells.length >= 2) md += `- **${cells[0].textContent.trim()}**: ${cells[1].textContent.trim()}\n`;
+  });
+  md += '\n### Perguntas da EDA\n';
+  md += checkRows('#e3-eda .check-row') + '\n\n';
+
+  // Modelo selecionado
+  const modelSel = document.querySelector('.model-opt.selected .model-name');
+  if (modelSel) md += `### Modelo selecionado\n${modelSel.textContent.trim()}\n\n`;
+
+  // Etapa 4
+  md += `## Etapa 4 — Construção\n\n`;
+  [['de','DE — Base de Jornada'], ['ds','DS — EDA e Modelo'], ['ba','BA — Insights e Apresentação']].forEach(([role, label]) => {
+    const rows = checkRows(`#e4-${role} .check-row`);
+    if (rows) md += `### ${label}\n${rows}\n\n`;
+  });
+
+  // Riscos
+  const riscos = [...document.querySelectorAll('#e2-risks .risk-title')]
+    .map(r => r.textContent.trim()).filter(Boolean);
+  if (riscos.length) {
+    md += `## Riscos identificados\n`;
+    riscos.forEach(r => md += `- ${r}\n`);
+    md += '\n';
+  }
+
+  md += `---\n*Gerado pelo MTA Planner — DP6*\n`;
+
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `MTA_${cliente.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0, 10)}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const LW_MAP = {
   curto:       { days: 14,  label: '14 dias',  hint: 'Ciclo curto -> 7-14 dias. Valide na EDA.' },
@@ -1850,12 +2158,227 @@ function updateSummary() {
 }
 
 // ===============================================
+// PROJECT PARAMS HELPER
+// ===============================================
+function getProjectParams() {
+  const proj = (document.getElementById('vc-project')?.value || '').trim() || 'SEU_PROJECT';
+  const ga4  = (document.getElementById('vc-ga4')?.value  || '').trim() || 'analytics_XXXXXXX';
+  const af   = (document.getElementById('vc-af')?.value   || '').trim() || 'appsflyer_data';
+  const lw   = (document.getElementById('lw-val')?.textContent || '').trim().replace(/[^0-9]/g,'') || '30';
+  return { proj, ga4, af, lw };
+}
+
+// ===============================================
+// DIAGNÓSTICO DE COMPLEXIDADE
+// ===============================================
+function buildDiagnosis() {
+  const el = document.getElementById('diag-card');
+  if (!el) return;
+
+  const hasApp     = hasChip('chips-plat','app');
+  const hasWeb     = hasChip('chips-plat','web');
+  const hasFisico  = hasChip('chips-plat','físico');
+  const hasCRM     = hasChip('chips-canal','crm');
+  const hasOffline = hasChip('chips-canal','offline');
+  const hasMMP     = hasChip('chips-mmp','adjust') || hasChip('chips-mmp','appsflyer');
+  const hasNoMMP   = hasChip('chips-mmp','não usa');
+  const bqOk       = hasChip('chips-bq','sim');
+  const loginOk    = hasChip('chips-login','sim');
+  const canais     = chipsOn('chips-canal').length;
+  const ciclo      = v('f-ciclo');
+  const marca      = v('f-marca');
+  const obj        = chipsOn('chips-obj');
+  const hasAwareness = obj.some(o => o.includes('awareness'));
+  const hasOmni      = obj.some(o => o.includes('omni'));
+
+  const factors = [];
+  let score = 0;
+
+  if (!bqOk)               { score+=3; factors.push({ t:'BQ não configurado',        sev:'high', d:'Pré-requisito bloqueante — sem BQ não há MTA' }); }
+  if (hasApp && hasWeb)    { score+=3; factors.push({ t:'Web + App',                 sev:'high', d:'User ID cross-platform obrigatório' }); }
+  if (hasApp && hasNoMMP)  { score+=2; factors.push({ t:'App sem MMP',               sev:'high', d:'Rastreamento de instalações limitado' }); }
+  if (hasOffline||hasFisico){score+=3; factors.push({ t:'Canal offline / físico',    sev:'high', d:'Requer identificador cruzável' }); }
+  if (hasCRM)              { score+=2; factors.push({ t:'CRM ativo',                 sev:'med',  d:'Cruzamento de identificadores necessário' }); }
+  if (hasMMP)              { score+=1; factors.push({ t:'MMP configurado',            sev:'low',  d:'Exportação BQ precisa ser validada' }); }
+  if (!loginOk)            { score+=2; factors.push({ t:'Ambiente não logado',        sev:'high', d:'User ID limitado — qualidade do rastreamento cai' }); }
+  if (ciclo==='longo'||ciclo==='muito-longo') { score+=1; factors.push({ t:'Ciclo longo (60-90d)',    sev:'med', d:'Lookback > 60 dias — mais dados necessários' }); }
+  if (hasAwareness)        { score+=1; factors.push({ t:'Objetivo: awareness',        sev:'low',  d:'EDA pode ser suficiente, sem modelagem completa' }); }
+  if (hasOmni)             { score+=2; factors.push({ t:'Objetivo: omnichannel',      sev:'high', d:'Integração offline + app + web simultânea' }); }
+  if (canais >= 6)         { score+=1; factors.push({ t: canais+' canais ativos',     sev:'low',  d:'Mais agrupamentos e validações de UTM' }); }
+  if (marca==='consolidada'){score+=1; factors.push({ t:'Marca consolidada',          sev:'low',  d:'Brand search pode dominar last touch' }); }
+
+  if (!factors.length) {
+    el.innerHTML = `<div style="text-align:center;padding:8px;color:var(--text-3);font-size:12px;">Preencha os campos para ver o diagnóstico</div>`;
+    return;
+  }
+
+  const lvl = score >= 8 ? { l:'ALTA',   cls:'danger', icon:'🔴' }
+            : score >= 4 ? { l:'MÉDIA',  cls:'warn',   icon:'🟡' }
+            :              { l:'BAIXA',  cls:'success', icon:'🟢' };
+
+  const sevBg    = s => s==='high'?'var(--danger-bg)':s==='med'?'var(--warn-bg)':'var(--surface-2)';
+  const sevBord  = s => s==='high'?'var(--danger-border)':s==='med'?'var(--warn-border)':'var(--border)';
+  const sevColor = s => s==='high'?'var(--danger)':s==='med'?'var(--warn)':'var(--text-2)';
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+      <div style="font-size:22px;line-height:1;">${lvl.icon}</div>
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);">Complexidade</div>
+        <div style="font-size:17px;font-weight:800;color:var(--${lvl.cls});">${lvl.l}</div>
+      </div>
+      <div style="margin-left:auto;text-align:right;">
+        <div style="font-size:20px;font-weight:800;color:var(--text-3);font-family:'JetBrains Mono',monospace;">${score}</div>
+        <div style="font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;">pontos</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      ${factors.map(f => `
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:6px;background:${sevBg(f.sev)};border:1px solid ${sevBord(f.sev)};">
+          <div style="font-size:11px;font-weight:800;color:${sevColor(f.sev)};white-space:nowrap;">${f.t}</div>
+          <div style="font-size:10px;color:var(--text-3);line-height:1.4;">${f.d}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ===============================================
+// PERGUNTAS AO CLIENTE — BANCO + GERAÇÃO AUTO
+// ===============================================
+const Q_STANDARD = [
+  { id: 'qs_conv_event',  text: 'Qual evento representa a conversão principal e como é disparado no GA4?' },
+  { id: 'qs_cycle',       text: 'Qual é o ciclo médio de decisão do usuário desde o primeiro contato até a conversão?' },
+  { id: 'qs_utms',        text: 'Todos os canais de mídia ativos estão sendo trackados com UTMs padronizados e consistentes?' },
+  { id: 'qs_volume',      text: 'Qual o volume médio de conversões por mês e o período de dados disponível?' },
+  { id: 'qs_seasonality', text: 'Há sazonalidade relevante ou mudança de mix de mídia no período de análise?' },
+];
+
+const Q_CONTEXTUAL = [
+  {
+    id: 'qc_app_mmp',
+    text: 'Como as campanhas mobile são rastreadas? Há MMP (AppsFlyer / Adjust) implementado e exportando para o BigQuery?',
+    cond: () => hasChip('chips-plat','app') && !hasChip('chips-mmp','adjust') && !hasChip('chips-mmp','appsflyer')
+  },
+  {
+    id: 'qc_crossplat',
+    text: 'O user_id é o mesmo no web e no app? Um mesmo usuário logado tem o mesmo identificador nas duas plataformas?',
+    cond: () => hasChip('chips-plat','app') && hasChip('chips-plat','web')
+  },
+  {
+    id: 'qc_offline_id',
+    text: 'Há identificador de usuário que permita cruzar dados offline com o ambiente digital? (ex: CPF, e-mail, ID de fidelidade)',
+    cond: () => hasChip('chips-canal','offline') || hasChip('chips-plat','físico')
+  },
+  {
+    id: 'qc_fisico_store',
+    text: 'Como são mapeadas as conversões em loja física? Há programa de fidelidade ou PDV com ID digital?',
+    cond: () => hasChip('chips-plat','físico')
+  },
+  {
+    id: 'qc_crm_id',
+    text: 'Qual identificador o CRM usa? É o mesmo que o GA4 registra como user_id para o cruzamento das jornadas?',
+    cond: () => hasChip('chips-canal','crm')
+  },
+  {
+    id: 'qc_crm_events',
+    text: 'Quais eventos CRM são considerados touchpoints de mídia? E-mail aberto, clicado ou apenas enviado?',
+    cond: () => hasChip('chips-canal','crm')
+  },
+  {
+    id: 'qc_mmp_export',
+    text: 'O MMP está exportando dados para o BigQuery? Qual é o histórico disponível e qual a taxa de match com o GA4?',
+    cond: () => hasChip('chips-mmp','adjust') || hasChip('chips-mmp','appsflyer')
+  },
+  {
+    id: 'qc_canib',
+    text: 'Há hipótese de qual canal está canibalizando outros no last touch? Qual a suspeita do time?',
+    cond: () => chipsOn('chips-obj').some(o => o.toLowerCase().includes('canibaliz'))
+  },
+  {
+    id: 'qc_overlap',
+    text: 'Quais audiências se sobrepõem entre canais? Como esses segmentos são definidos nas plataformas de mídia?',
+    cond: () => chipsOn('chips-obj').some(o => o.toLowerCase().includes('sobrepos'))
+  },
+  {
+    id: 'qc_login',
+    text: 'O login é obrigatório ou opcional? Em qual etapa da jornada o usuário tipicamente realiza o login?',
+    cond: () => hasChip('chips-login','sim')
+  },
+  {
+    id: 'qc_nologin',
+    text: 'Há estratégia de identificação cross-session sem login? (user_pseudo_id, fingerprinting, ID de campanha persistente)',
+    cond: () => !hasChip('chips-login','sim') && chipsOn('chips-plat').length > 0
+  },
+  {
+    id: 'qc_cycle_long',
+    text: 'Para o ciclo de decisão longo, como o cliente define o início da jornada? Há etapas offline no funil de consideração?',
+    cond: () => { const c = v('f-ciclo'); return c === 'longo' || c === 'muito-longo'; }
+  },
+  {
+    id: 'qc_brand',
+    text: 'Campanhas de brand search estão ativas? O cliente diferencia brand de non-brand nos relatórios?',
+    cond: () => v('f-marca') === 'consolidada'
+  },
+  {
+    id: 'qc_awareness',
+    text: 'Para canais de awareness (Display, YouTube), o KPI esperado é alcance/frequência ou assistência a conversões?',
+    cond: () => { const c = chipsOn('chips-canal'); return c.some(ch => ch.toLowerCase().includes('display') || ch.toLowerCase().includes('youtube')); }
+  },
+];
+
+let _dismissedQs = new Set();
+
+function buildClientQuestions() {
+  const autoList = document.getElementById('q-auto-list');
+  if (!autoList) return;
+
+  const standards    = Q_STANDARD.filter(q => !_dismissedQs.has(q.id));
+  const contextuals  = Q_CONTEXTUAL.filter(q => !_dismissedQs.has(q.id) && q.cond());
+  const hasDismissed = _dismissedQs.size > 0;
+
+  const restoreBtn = document.getElementById('q-restore-btn');
+  if (restoreBtn) restoreBtn.style.display = hasDismissed ? '' : 'none';
+
+  const all = [
+    ...standards.map(q => ({ ...q, tag: 'PADRÃO', tagCls: 'q-tag-std' })),
+    ...contextuals.map(q => ({ ...q, tag: 'AUTO',  tagCls: 'q-tag-ctx' })),
+  ];
+
+  if (!all.length) {
+    autoList.innerHTML = `<div style="padding:10px 16px;font-size:12px;color:var(--text-3);">Todas as perguntas foram dispensadas — clique em "Restaurar dispensadas" para reativá-las.</div>`;
+    return;
+  }
+
+  autoList.innerHTML = all.map((q, i) => `
+    <div class="q-auto-item" data-qid="${q.id}">
+      <div class="q-num" style="flex-shrink:0;">${i + 1}</div>
+      <div class="q-auto-text">${q.text}</div>
+      <span class="q-tag ${q.tagCls}">${q.tag}</span>
+      <button class="q-dismiss" onclick="dismissQ('${q.id}')" title="Dispensar esta pergunta">×</button>
+    </div>`).join('');
+}
+
+function dismissQ(id) {
+  _dismissedQs.add(id);
+  buildClientQuestions();
+  saveState();
+}
+
+function restoreAllQs() {
+  _dismissedQs.clear();
+  buildClientQuestions();
+  saveState();
+}
+
+// ===============================================
 // MAIN INPUT HANDLER
 // ===============================================
 function onInput() {
   updateLookback();
   updateSummary();
   buildAlerts();
+  buildDiagnosis();
+  buildClientQuestions();
+  saveState();
 }
 
 // ===============================================
@@ -1868,22 +2391,31 @@ function buildStage2() {
   const hasMMP = hasChip('chips-mmp','adjust') || hasChip('chips-mmp','appsflyer');
   const hasOffline = hasChip('chips-canal','offline');
   const bqOk = hasChip('chips-bq','sim');
+  const loginOk = hasChip('chips-login','sim');
+  const p = getProjectParams();
 
+  // ── CHECKLIST ──────────────────────────────
   const checks = [
-    { t: 'GA4 -> BigQuery export ativo e configurado', auto: true, role:'de', reason:'Fonte primária obrigatória para MTA' },
-    hasApp && hasWeb ? { t: 'User ID persistindo entre web e app (Golden ID / cross-platform)', auto: true, role:'de', reason:'App + Web detectado', crit: true } : null,
-    hasCRM ? { t: 'Dados de CRM disponíveis com User ID cruzável com o GA4', auto: true, role:'de', reason:'CRM é canal ativo' } : null,
-    hasMMP ? { t: 'Exportação dos dados de MMP para BigQuery / GCP configurada', auto: true, role:'de', reason:'MMP ativo  --  dados de app precisam ser cruzados', crit: true } : null,
+    { t: 'GA4 → BigQuery export ativo e configurado', auto: true, role:'de', reason:'Fonte primária obrigatória para MTA' },
+    !bqOk ? { t: '(!) BigQuery NÃO configurado — resolver antes de qualquer outra etapa', auto: true, role:'de', reason:'Pré-requisito bloqueante', crit: true } : null,
+    hasApp && hasWeb ? { t: 'User ID cross-platform validado: mesmo ID persiste entre web e app', auto: true, role:'de', reason:'App + Web detectado', crit: true } : null,
+    hasApp && hasWeb ? { t: 'Teste prático: usuário logado no app e no web — IDs coincidem?', auto: true, role:'de', reason:'App + Web — validar antes de construir a base', crit: true } : null,
+    hasApp && !hasMMP ? { t: '(!) App sem MMP — rastreamento de campanhas mobile limitado', auto: true, role:'de', reason:'App ativo sem ferramenta de atribuição mobile', crit: true } : null,
+    hasCRM ? { t: 'Identificador CRM ↔ GA4 mapeado e cruzável (ex: customer_id → user_id)', auto: true, role:'de', reason:'CRM é canal ativo' } : null,
+    hasCRM ? { t: 'Schema de eventos CRM documentado (source, medium, identificador)', auto: true, role:'de', reason:'CRM ativo — cruzamento de ID necessário' } : null,
+    hasMMP ? { t: 'Exportação MMP → BigQuery configurada, testada e com histórico suficiente', auto: true, role:'de', reason:'MMP ativo — dados de app precisam ser integrados', crit: true } : null,
+    hasMMP ? { t: 'Schema MMP validado: advertising_id e customer_user_id preenchidos?', auto: true, role:'de', reason:'MMP ativo — campos de identidade mobile' } : null,
     hasOffline ? { t: 'Dados offline mapeados com identificador de usuário cruzável', auto: true, role:'de', reason:'Canal offline detectado', crit: true } : null,
-    { t: 'UTMs padronizados e consistentes (source, medium, campaign)', auto: false },
-    { t: 'Histórico suficiente: mín. 3 meses de dados de boa qualidade', auto: false },
-    { t: 'Acessos e permissões ao BigQuery confirmados para o time', auto: false },
-    { t: 'Volume estimado validado (sessões/mês no período de análise)', auto: false },
-    hasApp ? { t: '(!) Testado na prática: usuário logado no app e web é unificado corretamente', auto: true, role:'de', reason:'Etapa crítica antes de construir qualquer base', crit: true } : null,
+    !loginOk ? { t: '(!) Ambiente não logado — user_id limitado, avaliar fallback (user_pseudo_id)', auto: true, role:'de', reason:'Sem login, rastreamento cross-session é impreciso' } : null,
+    { t: 'Nomes exatos dos eventos de conversão confirmados no BigQuery', auto: false },
+    { t: 'UTMs padronizados: source e medium consistentes em todos os canais', auto: false },
+    { t: 'Ausência de mudanças de implementação GA4 no período de análise confirmada', auto: false },
+    { t: 'Histórico disponível: mínimo 3 meses de dados de boa qualidade', auto: false },
+    { t: 'Acessos e permissões ao BigQuery confirmados para todo o time', auto: false },
+    { t: 'Volume estimado validado (sessões e conversões/mês no período)', auto: false },
   ].filter(Boolean);
 
-  const cl = document.getElementById('e2-checklist');
-  cl.innerHTML = checks.map((c, i) => `
+  document.getElementById('e2-checklist').innerHTML = checks.map(c => `
     <div class="check-row${c.auto ? (c.crit ? ' auto-de crit' : ' auto-de') : ''}" onclick="toggleCheck(this)">
       <div class="chkbox">v</div>
       <div style="flex:1;">
@@ -1892,18 +2424,19 @@ function buildStage2() {
       </div>
     </div>`).join('');
 
-  // Risks
+  // ── RISKS ──────────────────────────────────
   const risks = [
-    hasApp && hasWeb ? { lv:'high', t:'User ID não unificado entre web e app', d:'O mesmo usuário será contado como duas pessoas distintas  --  a jornada ficará fragmentada e os resultados, incorretos.', a:'-> DE: rodar query de validação de User ID cross-platform antes de construir qualquer base' } : null,
-    hasApp ? { lv:'high', t:'Quebra de sessão via deep link / Unilink para app', d:'Cliques em anúncios que abrem o app via link direto podem quebrar a sessão e perder o touchpoint de origem da mídia.', a:'-> DE: implementar parâmetro de rastreamento no deep link conforme documentação técnica' } : null,
-    hasCRM ? { lv:'med', t:'CRM sem identificador cruzável com GA4', d:'Se o CRM não usar o mesmo User ID do GA4, os disparos de e-mail e push não aparecerão corretamente na jornada do usuário.', a:'-> BA + DE: mapear como o CRM identifica o usuário e definir estratégia de cruzamento' } : null,
-    !bqOk ? { lv:'high', t:'BigQuery não configurado  --  MTA inviável', d:'A exportação do GA4 para BigQuery é condição básica para qualquer projeto de MTA customizado. Sem isso, o projeto não avança.', a:'-> DE + cliente: priorizar configuração do BigQuery export imediatamente' } : null,
-    hasMMP ? { lv:'med', t:'Dados de MMP em plataforma separada', d:'Dados de Adjust/AppsFlyer precisam ser exportados para o GCP e integrados ao BigQuery para compor a jornada do usuário em app.', a:'-> DE: planejar exportação e base unificada MMP + GA4 com ID único' } : null,
-    hasOffline ? { lv:'med', t:'Canal offline sem identificador confirmado', d:'Para incluir conversões offline no MTA é necessário um identificador de usuário cruzável. Sem isso, os dados offline ficam fora da jornada.', a:'-> BA + cliente: confirmar se há ID de usuário para cruzamento com o ambiente digital' } : null,
+    !bqOk ? { lv:'high', t:'BigQuery não configurado — MTA inviável', d:'A exportação GA4 → BigQuery é pré-requisito absoluto. Sem isso, o projeto não tem como avançar.', a:'→ DE + cliente: priorizar configuração do BigQuery export imediatamente' } : null,
+    hasApp && hasWeb ? { lv:'high', t:'User ID não unificado entre web e app', d:'Sem cross-platform ID, o mesmo usuário é contado duas vezes — a jornada fica fragmentada e os créditos de canal ficam errados.', a:'→ DE: executar query de validação cross-platform antes de construir qualquer base' } : null,
+    hasApp ? { lv:'high', t:'Quebra de sessão via deep link / Unilink para app', d:'Cliques em anúncios que abrem o app via link podem perder o parâmetro de origem de mídia, deixando o touchpoint sem atribuição.', a:'→ DE: validar rastreamento do deep link — parâmetro utm_source precisa sobreviver ao redirect' } : null,
+    !loginOk && hasApp ? { lv:'high', t:'App sem ambiente logado — identidade limitada', d:'Sem user_id persistente, o rastreamento de jornadas cross-session no app depende do advertising_id, que pode ser reiniciado ou bloqueado.', a:'→ DE + BA: avaliar o impacto real no volume de jornadas rastreáveis antes de confirmar o escopo' } : null,
+    hasCRM ? { lv:'med', t:'CRM sem identificador cruzável com GA4', d:'Se o CRM usa um ID diferente do GA4, os disparos de e-mail e push não aparecem corretamente na jornada — canal fica sub-representado.', a:'→ BA + DE: mapear identificador CRM e estratégia de join antes da Etapa 3' } : null,
+    hasMMP ? { lv:'med', t:'Dados de MMP em ambiente separado do GA4', d:'Dados de Adjust / AppsFlyer precisam ser exportados para o GCP e integrados com a mesma chave de usuário do GA4.', a:'→ DE: planejar exportação e validar taxa de match entre MMP e GA4 (query disponível)' } : null,
+    hasOffline ? { lv:'med', t:'Canal offline sem identificador confirmado', d:'Conversões offline só entram no MTA se houver um ID cruzável com o digital. Sem isso, o canal fica fora da jornada e sub-representado.', a:'→ BA + cliente: confirmar se há ID de usuário para cruzamento com o ambiente digital' } : null,
+    hasApp && !hasMMP ? { lv:'med', t:'App sem MMP — origem de campanhas mobile desconhecida', d:'Sem MMP, instalações e eventos no app não têm atribuição de canal confiável. Jornadas que começam no app ficam sem touchpoint de mídia.', a:'→ BA: comunicar limitação ao cliente; avaliar implementar MMP antes de executar o MTA' } : null,
   ].filter(Boolean);
 
-  const rp = document.getElementById('e2-risks');
-  rp.innerHTML = risks.map((r, i) => `
+  document.getElementById('e2-risks').innerHTML = risks.map(r => `
     <div class="risk-card">
       <div class="risk-head" onclick="toggleRisk(this)">
         <span class="risk-level ${r.lv === 'high' ? 'rl-high' : 'rl-med'}">${r.lv === 'high' ? 'ALTO' : 'MÉDIO'}</span>
@@ -1916,29 +2449,159 @@ function buildStage2() {
       </div>
     </div>`).join('');
 
-  // Queries for DE
-  const queries = [];
-  if (hasApp && hasWeb) queries.push({
-    name: 'Validação User ID cross-platform',
-    desc: 'User IDs que aparecem em web E app',
-    code: `<span class="cm">-- User IDs presentes em web E app</span>\n<span class="kw">SELECT</span>\n  user_id,\n  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> platform) <span class="kw">AS</span> plataformas,\n  <span class="fn">ARRAY_AGG</span>(<span class="kw">DISTINCT</span> platform) <span class="kw">AS</span> lista\n<span class="kw">FROM</span> <span class="str">\`proj.dataset.events_*\`</span>\n<span class="kw">WHERE</span> user_id <span class="kw">IS NOT NULL</span>\n<span class="kw">GROUP BY</span> user_id\n<span class="kw">HAVING</span> plataformas > <span class="num">1</span>\n<span class="kw">LIMIT</span> <span class="num">200</span>`
+  // ── QUERIES DE (parametrizadas) ────────────
+  const Q = (proj, ga4) => ({
+    tbl: `\`${proj}.${ga4}.events_*\``,
+    tbl2: `\`${proj}.${ga4}.events_\${...}\``
   });
+  const qt = Q(p.proj, p.ga4);
+
+  const queries = [];
+
   queries.push({
-    name: 'Cobertura de UTMs',
-    desc: '% sessões com e sem UTM por source/medium',
-    code: `<span class="cm">-- Diagnóstico de cobertura UTM</span>\n<span class="kw">SELECT</span>\n  traffic_source.source,\n  traffic_source.medium,\n  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> sessoes,\n  <span class="fn">ROUND</span>(<span class="fn">COUNT</span>(*) * <span class="num">100.0</span> /\n    <span class="fn">SUM</span>(<span class="fn">COUNT</span>(*)) <span class="kw">OVER</span>(), <span class="num">2</span>) <span class="kw">AS</span> pct\n<span class="kw">FROM</span> <span class="str">\`proj.dataset.events_*\`</span>\n<span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span>\n  <span class="str">'20250101'</span> <span class="kw">AND</span> <span class="str">'20250331'</span>\n<span class="kw">GROUP BY</span> <span class="num">1</span>, <span class="num">2</span>\n<span class="kw">ORDER BY</span> sessoes <span class="kw">DESC</span>`
+    name: 'Cobertura de User ID nas conversões',
+    pilar: 'Identidade',
+    desc: '% de conversões com user_id preenchido — pilar identidade',
+    code: `<span class="cm">-- Pilar: Identidade</span>
+<span class="cm">-- Altere NOME_EVENTO pelo evento de conversão real</span>
+<span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_conversoes,
+  <span class="fn">COUNTIF</span>(user_id <span class="kw">IS NOT NULL</span> <span class="kw">AND</span> user_id != <span class="str">''</span>) <span class="kw">AS</span> com_user_id,
+  <span class="fn">ROUND</span>(<span class="fn">COUNTIF</span>(user_id <span class="kw">IS NOT NULL</span>) * <span class="num">100.0</span> / <span class="fn">COUNT</span>(*), <span class="num">1</span>) <span class="kw">AS</span> pct_user_id,
+  <span class="fn">COUNTIF</span>(user_pseudo_id <span class="kw">IS NOT NULL</span>) <span class="kw">AS</span> com_pseudo_id
+<span class="kw">FROM</span> ${qt.tbl}
+<span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20250101'</span> <span class="kw">AND</span> <span class="str">'20250331'</span>
+  <span class="kw">AND</span> event_name = <span class="str">'NOME_EVENTO'</span>`
   });
 
-  const qc = document.getElementById('e2-queries');
-  qc.innerHTML = queries.map(q => `
+  queries.push({
+    name: 'Volume diário de conversões',
+    pilar: 'Volume',
+    desc: 'Conversões por dia — detecta gaps e sazonalidade',
+    code: `<span class="cm">-- Pilar: Volume — detecta dias zerados ou gaps</span>
+<span class="kw">SELECT</span>
+  event_date,
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> conversoes,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> user_id) <span class="kw">AS</span> usuarios_unicos
+<span class="kw">FROM</span> ${qt.tbl}
+<span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20250101'</span> <span class="kw">AND</span> <span class="str">'20250331'</span>
+  <span class="kw">AND</span> event_name = <span class="str">'NOME_EVENTO'</span>
+<span class="kw">GROUP BY</span> event_date
+<span class="kw">ORDER BY</span> event_date`
+  });
+
+  queries.push({
+    name: 'Deduplicação de eventos de conversão',
+    pilar: 'Qualidade',
+    desc: 'Detecta event_bundle_sequence_number duplicados',
+    code: `<span class="cm">-- Pilar: Qualidade — duplicatas por user + timestamp</span>
+<span class="kw">SELECT</span>
+  user_id,
+  event_timestamp,
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> ocorrencias
+<span class="kw">FROM</span> ${qt.tbl}
+<span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20250101'</span> <span class="kw">AND</span> <span class="str">'20250331'</span>
+  <span class="kw">AND</span> event_name = <span class="str">'NOME_EVENTO'</span>
+  <span class="kw">AND</span> user_id <span class="kw">IS NOT NULL</span>
+<span class="kw">GROUP BY</span> user_id, event_timestamp
+<span class="kw">HAVING</span> ocorrencias > <span class="num">1</span>
+<span class="kw">ORDER BY</span> ocorrencias <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">100</span>`
+  });
+
+  queries.push({
+    name: 'Distribuição de source / medium',
+    pilar: 'Cobertura',
+    desc: '% sessões por canal — pilar cobertura e qualidade de UTM',
+    code: `<span class="cm">-- Pilar: Cobertura + Qualidade de UTM</span>
+<span class="kw">SELECT</span>
+  traffic_source.source  <span class="kw">AS</span> source,
+  traffic_source.medium  <span class="kw">AS</span> medium,
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> sessoes,
+  <span class="fn">ROUND</span>(<span class="fn">COUNT</span>(*) * <span class="num">100.0</span> / <span class="fn">SUM</span>(<span class="fn">COUNT</span>(*)) <span class="kw">OVER</span>(), <span class="num">2</span>) <span class="kw">AS</span> pct
+<span class="kw">FROM</span> ${qt.tbl}
+<span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20250101'</span> <span class="kw">AND</span> <span class="str">'20250331'</span>
+  <span class="kw">AND</span> event_name = <span class="str">'session_start'</span>
+<span class="kw">GROUP BY</span> <span class="num">1</span>, <span class="num">2</span>
+<span class="kw">ORDER BY</span> sessoes <span class="kw">DESC</span>`
+  });
+
+  if (hasApp && hasWeb) queries.push({
+    name: 'Validação User ID cross-platform',
+    pilar: 'Identidade',
+    desc: 'user_ids que aparecem em web E app — pilar identidade crítico',
+    code: `<span class="cm">-- Pilar: Identidade — User ID em múltiplas plataformas</span>
+<span class="kw">SELECT</span>
+  user_id,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> platform) <span class="kw">AS</span> n_plataformas,
+  <span class="fn">ARRAY_AGG</span>(<span class="kw">DISTINCT</span> platform) <span class="kw">AS</span> plataformas,
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_eventos
+<span class="kw">FROM</span> ${qt.tbl}
+<span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20250101'</span> <span class="kw">AND</span> <span class="str">'20250331'</span>
+  <span class="kw">AND</span> user_id <span class="kw">IS NOT NULL</span>
+<span class="kw">GROUP BY</span> user_id
+<span class="kw">HAVING</span> n_plataformas > <span class="num">1</span>
+<span class="kw">LIMIT</span> <span class="num">500</span>`
+  });
+
+  if (hasMMP) queries.push({
+    name: 'Taxa de match MMP ↔ GA4',
+    pilar: 'Identidade',
+    desc: 'Conversões Appsflyer/Adjust que cruzam com GA4 por user_id',
+    code: `<span class="cm">-- Pilar: Identidade — match entre MMP e GA4</span>
+<span class="cm">-- Ajuste o schema do MMP conforme sua exportação</span>
+<span class="kw">WITH</span> ga4_users <span class="kw">AS</span> (
+  <span class="kw">SELECT DISTINCT</span> user_id
+  <span class="kw">FROM</span> ${qt.tbl}
+  <span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20250101'</span> <span class="kw">AND</span> <span class="str">'20250331'</span>
+    <span class="kw">AND</span> user_id <span class="kw">IS NOT NULL</span>
+), mmp_users <span class="kw">AS</span> (
+  <span class="kw">SELECT DISTINCT</span> customer_user_id <span class="kw">AS</span> user_id
+  <span class="kw">FROM</span> \`${p.proj}.${p.af}.installs_report_*\`
+  <span class="kw">WHERE</span> customer_user_id <span class="kw">IS NOT NULL</span>
+)
+<span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_mmp,
+  <span class="fn">COUNTIF</span>(g.user_id <span class="kw">IS NOT NULL</span>) <span class="kw">AS</span> com_match_ga4,
+  <span class="fn">ROUND</span>(<span class="fn">COUNTIF</span>(g.user_id <span class="kw">IS NOT NULL</span>) * <span class="num">100.0</span> / <span class="fn">COUNT</span>(*), <span class="num">1</span>) <span class="kw">AS</span> pct_match
+<span class="kw">FROM</span> mmp_users m
+<span class="kw">LEFT JOIN</span> ga4_users g <span class="kw">USING</span>(user_id)`
+  });
+
+  if (hasCRM) queries.push({
+    name: 'Taxa de match CRM ↔ GA4',
+    pilar: 'Identidade',
+    desc: 'Usuários de e-mail CRM que existem no GA4',
+    code: `<span class="cm">-- Pilar: Identidade — match CRM e GA4</span>
+<span class="cm">-- Adapte crm_dataset.disparos para o schema real</span>
+<span class="kw">WITH</span> ga4_ids <span class="kw">AS</span> (
+  <span class="kw">SELECT DISTINCT</span> user_id
+  <span class="kw">FROM</span> ${qt.tbl}
+  <span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'20250101'</span> <span class="kw">AND</span> <span class="str">'20250331'</span>
+    <span class="kw">AND</span> user_id <span class="kw">IS NOT NULL</span>
+), crm_ids <span class="kw">AS</span> (
+  <span class="kw">SELECT DISTINCT</span> user_id
+  <span class="kw">FROM</span> \`${p.proj}.crm_dataset.disparos\`
+  <span class="kw">WHERE</span> data_disparo <span class="kw">BETWEEN</span> <span class="str">'2025-01-01'</span> <span class="kw">AND</span> <span class="str">'2025-03-31'</span>
+)
+<span class="kw">SELECT</span>
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_crm,
+  <span class="fn">COUNTIF</span>(g.user_id <span class="kw">IS NOT NULL</span>) <span class="kw">AS</span> com_match_ga4,
+  <span class="fn">ROUND</span>(<span class="fn">COUNTIF</span>(g.user_id <span class="kw">IS NOT NULL</span>) * <span class="num">100.0</span> / <span class="fn">COUNT</span>(*), <span class="num">1</span>) <span class="kw">AS</span> pct_match
+<span class="kw">FROM</span> crm_ids c
+<span class="kw">LEFT JOIN</span> ga4_ids g <span class="kw">USING</span>(user_id)`
+  });
+
+  document.getElementById('e2-queries').innerHTML = queries.map(q => `
     <div style="border-bottom:1px solid var(--de-border);">
       <div class="query-head">
         <div class="query-head-info">
           <div class="query-name">${q.name}</div>
-          <div class="query-desc">${q.desc}</div>
+          <div class="query-desc"><span style="font-weight:700;color:var(--de);">Pilar: ${q.pilar}</span> — ${q.desc}</div>
         </div>
+        <button class="query-copy-btn" onclick="copyQuery(this)">📋 Copiar</button>
       </div>
-      <div class="query-code">${q.code}</div>
+      <div class="query-code" data-raw="${encodeURIComponent(q.code.replace(/<[^>]+>/g,''))}">${q.code}</div>
     </div>`).join('');
 }
 
@@ -1969,33 +2632,526 @@ function buildStage3() {
   tbl.innerHTML = `<thead><tr><th>Canal Agrupado</th><th>Critério (medium / source)</th><th>Exemplos</th></tr></thead><tbody>` +
     rows.map((r,i) => `<tr><td class="ch-name">${r.name}</td><td class="ch-code">${r.crit}</td><td style="color:var(--text-3);font-size:11px;">${r.ex}</td></tr>`).join('') + `</tbody>`;
 
-  // EDA questions
-  const edaQ = [
-    { t: 'Qual o tempo médio e no de touchpoints até a conversão?', auto: false },
-    { t: 'Qual a % de jornadas com 1, 2, 3 ou mais touchpoints?', auto: false },
-    { t: 'Quais canais aparecem mais em jornadas conversoras vs. não conversoras?', auto: false },
-    { t: 'Qual o papel de cada canal  --  Introdutor / Engajador / Conversor?', auto: false },
-  ];
+  // ── BANCO DE PERGUNTAS EDA POR PILAR ─────────
   const hasApp = hasChip('chips-plat','app');
   const hasWeb = hasChip('chips-plat','web');
-  if (hasApp && hasWeb) edaQ.push({ t: 'Como se distribui a jornada entre web e app? Há diferença de conversão entre plataformas?', auto: true, role:'ds', reason:'Web + App ativos' });
-  if (hasChip('chips-canal','crm')) edaQ.push({ t: 'O CRM aparece como Conversor ou como Engajador? Há canibalização com mídia paga?', auto: true, role:'ds', reason:'CRM é canal ativo' });
-  if (hasOverlap) edaQ.push({ t: 'Há sobreposição de audiência entre brand search e performance paga? Brand search aparece como last touch com que frequência?', auto: true, role:'ds', reason:'Objetivo: analisar sobreposição' });
-  if (hasAwareness) edaQ.push({ t: 'Os canais de awareness aparecem no início da jornada? Com que frequência contribuem para conversões futuras?', auto: true, role:'ds', reason:'Objetivo: justificar awareness' });
-  edaQ.push({ t: `Qual a % de jornadas encerradas dentro de ${lw} dias? (calibragem da lookback window)`, auto: false });
-  edaQ.push({ t: 'Como o comportamento dos canais difere entre os dois períodos analisados?', auto: false });
+  const hasCRM = hasChip('chips-canal','crm');
+  const hasMMP = hasChip('chips-mmp','adjust') || hasChip('chips-mmp','appsflyer');
+  const hasOffline = hasChip('chips-canal','offline');
+  const hasYT = hasChip('chips-canal','youtube') || hasChip('chips-canal','display');
+  const hasAfil = hasChip('chips-canal','afiliados');
 
-  const edaEl = document.getElementById('e3-eda');
-  edaEl.innerHTML = edaQ.map((q, i) => `
-    <div class="check-row${q.auto ? ' auto-' + (q.role||'ds') : ''}" onclick="toggleCheck(this)">
+  const edaQ = [];
+
+  // ── Pilar 1: Identidade ──────────────────────
+  edaQ.push({ pilar:'🪪 Identidade', t:'Qual a % de conversões com user_id preenchido?', auto:false });
+  edaQ.push({ pilar:'🪪 Identidade', t:'Qual a % de jornadas com ao menos 1 touchpoint com user_id (vs. apenas user_pseudo_id)?', auto:false });
+  if (hasApp && hasWeb) edaQ.push({ pilar:'🪪 Identidade', t:'Qual % de usuários tem touchpoints em web E app? As jornadas cross-platform fazem sentido (sequência lógica)?', auto:true, role:'ds', reason:'Web + App ativos' });
+  if (hasCRM) edaQ.push({ pilar:'🪪 Identidade', t:'Qual % dos disparos de CRM tem match com sessões no GA4 no mesmo user_id? Há muitos disparos sem match?', auto:true, role:'ds', reason:'CRM ativo — validar cruzamento' });
+  if (hasMMP) edaQ.push({ pilar:'🪪 Identidade', t:'Qual a taxa de match entre customer_user_id do MMP e user_id do GA4? Há instalações sem match?', auto:true, role:'ds', reason:'MMP ativo — match com GA4 necessário' });
+
+  // ── Pilar 2: Cobertura ───────────────────────
+  edaQ.push({ pilar:'📡 Cobertura', t:'Qual % das sessões tem source/medium = (direct)/(none)? Está acima de 30%? Pode indicar UTMs faltando.', auto:false });
+  edaQ.push({ pilar:'📡 Cobertura', t:'Existem touchpoints com canal "Unassigned" ou "not set"? Quais são as combinações de source/medium não mapeadas?', auto:false });
+  edaQ.push({ pilar:'📡 Cobertura', t:'Qual é a distribuição de touchpoints por canal? Algum canal ativo na Etapa 1 está ausente ou sub-representado na base?', auto:false });
+  if (hasOffline) edaQ.push({ pilar:'📡 Cobertura', t:'Qual % das conversões offline tem match com o digital? Qual o impacto na jornada total se retirarmos os offline?', auto:true, role:'ds', reason:'Canal offline ativo' });
+  if (hasAfil) edaQ.push({ pilar:'📡 Cobertura', t:'Os afiliados estão chegando com source/medium corretos? Há variações de UTM não padronizadas?', auto:true, role:'ds', reason:'Afiliados ativo — qualidade de UTM crítica' });
+
+  // ── Pilar 3: Qualidade ───────────────────────
+  edaQ.push({ pilar:'✅ Qualidade', t:'Qual a taxa de duplicatas no evento de conversão? (mesmo user_id + event_timestamp duplicados)', auto:false });
+  edaQ.push({ pilar:'✅ Qualidade', t:'Há variações de capitalização ou formatação nos valores de source/medium? (ex: "Google" vs "google" vs "GOOGLE")', auto:false });
+  edaQ.push({ pilar:'✅ Qualidade', t:'Há gaps de dados no período de análise? (dias com zero conversões ou volume atipicamente baixo)', auto:false });
+  if (hasCRM) edaQ.push({ pilar:'✅ Qualidade', t:'Os eventos de CRM chegam com source/medium corretos ou estão sendo classificados como "(direct)"?', auto:true, role:'ds', reason:'CRM ativo — qualidade de UTM do canal' });
+
+  // ── Pilar 4: Janela (Lookback) ───────────────
+  edaQ.push({ pilar:'⏱ Janela', t:`Qual % das jornadas se encerra em até ${lw} dias? (calibragem da lookback window — meta: > 90%)`, auto:false });
+  edaQ.push({ pilar:'⏱ Janela', t:'Qual é o P50, P75 e P90 de duração das jornadas em dias? Há outliers acima de 120 dias?', auto:false });
+  edaQ.push({ pilar:'⏱ Janela', t:'Existe diferença de duração de jornada entre usuários que convertem vs. os que não convertem?', auto:false });
+  if (hasAwareness) edaQ.push({ pilar:'⏱ Janela', t:'Os canais de awareness aparecem nos primeiros touchpoints? Em quanto % das jornadas conversoras eles precedem a conversão dentro da lookback?', auto:true, role:'ds', reason:'Objetivo: justificar awareness' });
+
+  // ── Pilar 5: Conversão ───────────────────────
+  edaQ.push({ pilar:'🎯 Conversão', t:'O evento de conversão é único por usuário no período ou há múltiplas conversões por usuário? Como isso impacta o escopo do modelo?', auto:false });
+  edaQ.push({ pilar:'🎯 Conversão', t:'Há micro-conversões (ex: "add_to_cart") que podem ser confundidas com a macro-conversão? O filtro está correto?', auto:false });
+  edaQ.push({ pilar:'🎯 Conversão', t:'Qual a distribuição de conversões por dia da semana e por hora? Há sazonalidade que precisa ser considerada?', auto:false });
+
+  // ── Resultado: Atribuição ────────────────────
+  edaQ.push({ pilar:'🤖 Atribuição', t:'Qual o tempo médio e número de touchpoints até a conversão? Como se distribui (1 touchpoint, 2, 3+)?', auto:false });
+  edaQ.push({ pilar:'🤖 Atribuição', t:'Qual o papel de cada canal — Introdutor / Engajador / Conversor? Como isso se compara com o Last Click?', auto:false });
+  edaQ.push({ pilar:'🤖 Atribuição', t:'Quais canais aparecem mais em jornadas conversoras vs. não conversoras?', auto:false });
+  if (hasOverlap) edaQ.push({ pilar:'🤖 Atribuição', t:'Brand search aparece como last touch com que frequência? Qual o efeito de remoção do brand search no modelo Markov?', auto:true, role:'ds', reason:'Objetivo: sobreposição de audiência' });
+  edaQ.push({ pilar:'🤖 Atribuição', t:'Como o comportamento dos canais difere entre os dois períodos comparados? Algum canal ganhou ou perdeu relevância?', auto:false });
+
+  // Renderizar com label de pilar
+  let lastPilar = '';
+  document.getElementById('e3-eda').innerHTML = edaQ.map((q, i) => {
+    let pilarHeader = '';
+    if (q.pilar !== lastPilar) {
+      lastPilar = q.pilar;
+      pilarHeader = `<div style="padding:8px 18px 4px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);background:var(--surface-2);border-bottom:1px solid var(--border);">${q.pilar}</div>`;
+    }
+    return `${pilarHeader}<div class="check-row${q.auto ? ' auto-' + (q.role||'ds') : ''}" onclick="toggleCheck(this)">
       <div class="chkbox">v</div>
       <div style="flex:1;">
         <div class="check-text">${q.t}</div>
         ${q.auto ? `<div class="check-meta"><span class="badge badge-auto">* AUTO</span> ${q.reason}</div>` : ''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
+  buildPythonScripts();
   buildAlerts();
+}
+
+// ===============================================
+// COPY QUERY HELPER
+// ===============================================
+function copyQuery(btn) {
+  const codeEl = btn.closest('.query-head').nextElementSibling;
+  const raw = codeEl.dataset.raw ? decodeURIComponent(codeEl.dataset.raw) : codeEl.innerText;
+  navigator.clipboard.writeText(raw).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copiado!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = raw; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copiado!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+// ===============================================
+// PYTHON SCRIPTS — DS com Jatoolbox (Stage 3 sidebar)
+// ===============================================
+function buildPythonScripts() {
+  const el = document.getElementById('e3-py-scripts');
+  if (!el) return;
+
+  const hasApp = hasChip('chips-plat','app');
+  const hasWeb = hasChip('chips-plat','web');
+  const hasCRM = hasChip('chips-canal','crm');
+  const hasOverlap = chipsOn('chips-obj').some(o => o.includes('sobreposição'));
+  const lw = getProjectParams().lw;
+
+  const scripts = [];
+
+  // 0. Setup
+  scripts.push({
+    name: '0. Setup — Jatoolbox + estrutura base',
+    pilar: 'Setup',
+    code: `<span class="cm"># Célula 1 — instalar dependências</span>
+<span class="cm"># pip install Jatoolbox ChannelAttribution pandas</span>
+
+<span class="kw">from</span> jatoolbox <span class="kw">import</span> jatoolbox <span class="kw">as</span> jt
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">from</span> collections <span class="kw">import</span> Counter
+
+an = jt.<span class="fn">JAToolbox</span>()
+
+<span class="cm"># df vem da query SOT exportada do BigQuery</span>
+<span class="cm"># colunas obrigatórias: uid, jornada, n_touchpoints,</span>
+<span class="cm">#   dt_primeiro_tp, dt_conversao, duracao_dias, converteu</span>
+
+<span class="cm"># Adiciona métricas base com Jatoolbox</span>
+df[<span class="str">'n_tps'</span>]      = df[<span class="str">'jornada'</span>].apply(an.get_size)
+df[<span class="str">'primeiro_tp'</span>] = df[<span class="str">'jornada'</span>].apply(an.get_first_tp)
+df[<span class="str">'ultimo_tp'</span>]   = df[<span class="str">'jornada'</span>].apply(an.get_last_tp)
+
+<span class="cm"># Agrupa para métodos que esperam (jornada, ocurrencies)</span>
+df_grp = (df.groupby(<span class="str">'jornada'</span>)
+            .agg(ocurrencies=(<span class="str">'uid'</span>,<span class="str">'count'</span>),
+                 conversoes=(<span class="str">'converteu'</span>,<span class="str">'sum'</span>))
+            .reset_index())
+df_conv = df_grp[df_grp[<span class="str">'conversoes'</span>] > <span class="num">0</span>].copy()
+
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"Total usuários : {df['uid'].nunique():,}"</span>)
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"Conversoras    : {df['converteu'].sum():,}"</span>)
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"Não conversoras: {(df['converteu']==0).sum():,}"</span>)`
+  });
+
+  // 1. Distribuição de touchpoints
+  scripts.push({
+    name: '1. Distribuição de touchpoints por jornada',
+    pilar: 'Atribuição',
+    code: `<span class="cm"># Quantos touchpoints até converter?</span>
+dist = df.groupby(<span class="str">'n_tps'</span>)[<span class="str">'converteu'</span>].agg(
+    total=<span class="str">'count'</span>, conversoes=<span class="str">'sum'</span>
+).reset_index()
+dist[<span class="str">'tx_conv'</span>] = (dist[<span class="str">'conversoes'</span>] / dist[<span class="str">'total'</span>] * <span class="num">100</span>).round(<span class="num">1</span>)
+dist[<span class="str">'pct_jornadas'</span>] = (dist[<span class="str">'total'</span>] / dist[<span class="str">'total'</span>].sum() * <span class="num">100</span>).round(<span class="num">1</span>)
+<span class="fn">print</span>(dist.head(<span class="num">10</span>).to_string(index=<span class="kw">False</span>))
+
+<span class="cm"># Primeiro e último canal — conversoras</span>
+conv = df[df[<span class="str">'converteu'</span>]==<span class="num">1</span>]
+<span class="fn">print</span>(<span class="str">"\\n--- Primeiro canal (Introdutor) ---"</span>)
+<span class="fn">print</span>(conv[<span class="str">'primeiro_tp'</span>].value_counts().head(<span class="num">8</span>))
+<span class="fn">print</span>(<span class="str">"\\n--- Último canal (Conversor) ---"</span>)
+<span class="fn">print</span>(conv[<span class="str">'ultimo_tp'</span>].value_counts().head(<span class="num">8</span>))`
+  });
+
+  // 2. channels_by_tp — posição na jornada
+  scripts.push({
+    name: '2. Canal por posição na jornada (Jatoolbox)',
+    pilar: 'Atribuição',
+    code: `<span class="cm"># channels_by_tp: qual canal aparece em cada posição?</span>
+<span class="cm"># Mostra Introdutor (pos 1), Engajadores (2..n-1), Conversor (última)</span>
+
+result = an.<span class="fn">channels_by_tp</span>(
+    df=df_conv,
+    j=<span class="str">'jornada'</span>,
+    ocurrencies=<span class="str">'ocurrencies'</span>,
+    max_journey_size=<span class="num">6</span>,
+    separator=<span class="str">' > '</span>
+)
+<span class="fn">print</span>(result)
+
+<span class="cm"># tps_by_channel: frequência de cada canal nas jornadas conversoras</span>
+freq = an.<span class="fn">tps_by_channel</span>(
+    df=df_conv,
+    j=<span class="str">'jornada'</span>,
+    ocurrencies=<span class="str">'ocurrencies'</span>
+)
+<span class="fn">print</span>(<span class="str">"\\n--- Frequência por canal ---"</span>)
+<span class="fn">print</span>(freq)`
+  });
+
+  // 3. Matriz de transição
+  scripts.push({
+    name: '3. Matriz de transição entre canais (Jatoolbox)',
+    pilar: 'Atribuição',
+    code: `<span class="cm"># Agrega transições de todas as jornadas conversoras</span>
+transitions = Counter()
+<span class="kw">for</span> jornada <span class="kw">in</span> df[df[<span class="str">'converteu'</span>]==<span class="num">1</span>][<span class="str">'jornada'</span>]:
+    trans = an.<span class="fn">get_transitions</span>(jornada, count=<span class="kw">True</span>, norm=<span class="kw">False</span>)
+    <span class="kw">if</span> <span class="fn">hasattr</span>(trans, <span class="str">'items'</span>):
+        <span class="kw">for</span> k, v <span class="kw">in</span> trans.items():
+            transitions[k] += v
+
+trans_df = pd.<span class="fn">DataFrame</span>(
+    [(k[<span class="num">0</span>], k[<span class="num">1</span>], v) <span class="kw">for</span> k, v <span class="kw">in</span> transitions.items()],
+    columns=[<span class="str">'origem'</span>, <span class="str">'destino'</span>, <span class="str">'freq'</span>]
+).sort_values(<span class="str">'freq'</span>, ascending=<span class="kw">False</span>)
+
+<span class="cm"># Pivot para formato de matriz</span>
+matrix = trans_df.<span class="fn">pivot</span>(index=<span class="str">'origem'</span>, columns=<span class="str">'destino'</span>, values=<span class="str">'freq'</span>).fillna(<span class="num">0</span>)
+<span class="fn">print</span>(matrix)
+<span class="fn">print</span>(<span class="str">"\\nTop 10 transições:"</span>)
+<span class="fn">print</span>(trans_df.head(<span class="num">10</span>).to_string(index=<span class="kw">False</span>))`
+  });
+
+  // 4. Lookback calibration
+  scripts.push({
+    name: `4. Calibragem da lookback window (${lw} dias)`,
+    pilar: 'Janela',
+    code: `<span class="cm"># Valida empiricamente a lookback de ${lw} dias</span>
+LW = <span class="num">${lw}</span>
+
+<span class="cm"># Percentis de duração das jornadas conversoras</span>
+conv = df[df[<span class="str">'converteu'</span>]==<span class="num">1</span>][<span class="str">'duracao_dias'</span>].dropna()
+<span class="kw">for</span> p <span class="kw">in</span> [<span class="num">50</span>, <span class="num">75</span>, <span class="num">90</span>, <span class="num">95</span>, <span class="num">99</span>]:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="str">"P{p:02d}: {conv.quantile(p/100):.0f} dias"</span>)
+
+pct = (conv <= LW).mean()
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"\\n% jornadas encerradas em <= {LW} dias: {pct:.1%}"</span>)
+<span class="fn">print</span>(<span class="str">"Meta: > 90% para a lookback ser confiável"</span>)
+
+<span class="cm"># Verifica com Jatoolbox: jornadas com n_tps específicos</span>
+<span class="cm"># por posição do canal usando get_nth_tp</span>
+<span class="fn">print</span>(<span class="str">"\\nCanal no 1º touchpoint (amostra):"</span>)
+sample = df[df[<span class="str">'n_tps'</span>] >= <span class="num">3</span>][<span class="str">'jornada'</span>].head(<span class="num">5</span>)
+<span class="kw">for</span> j <span class="kw">in</span> sample:
+    <span class="fn">print</span>(<span class="fn">f</span><span class="str">"  1º: {an.get_nth_tp(j, 0)} | 2º: {an.get_nth_tp(j, 1)} | último: {an.get_last_tp(j)}"</span>)`
+  });
+
+  // 5. Last Click vs. Markov
+  scripts.push({
+    name: '5. Last Click vs. Markov (ChannelAttribution)',
+    pilar: 'Atribuição',
+    code: `<span class="cm"># pip install ChannelAttribution</span>
+<span class="kw">from</span> ChannelAttribution <span class="kw">import</span> markov_model
+
+<span class="cm"># Modelo Markov order=1</span>
+markov_out, removal_eff, _ = <span class="fn">markov_model</span>(
+    df, var_path=<span class="str">'jornada'</span>,
+    var_conv=<span class="str">'converteu'</span>, var_value=<span class="kw">None</span>,
+    order=<span class="num">1</span>, out_more=<span class="kw">True</span>
+)
+
+<span class="cm"># Last Click baseline — usa último_tp calculado no setup</span>
+lc = (df[df[<span class="str">'converteu'</span>]==<span class="num">1</span>][<span class="str">'ultimo_tp'</span>]
+      .value_counts().rename(<span class="str">'last_click'</span>))
+
+<span class="cm"># Comparação</span>
+result = (markov_out
+          .set_index(<span class="str">'channel_name'</span>)[[<span class="str">'total_conversions'</span>]]
+          .rename(columns={<span class="str">'total_conversions'</span>: <span class="str">'markov'</span>})
+          .join(lc).fillna(<span class="num">0</span>))
+result[<span class="str">'delta_pct'</span>] = ((result[<span class="str">'markov'</span>] - result[<span class="str">'last_click'</span>])
+                      / result[<span class="str">'last_click'</span>].clip(<span class="num">1</span>) * <span class="num">100</span>).round(<span class="num">1</span>)
+<span class="fn">print</span>(result.sort_values(<span class="str">'markov'</span>, ascending=<span class="kw">False</span>).to_string())
+
+<span class="cm"># Efeito de remoção por canal</span>
+<span class="fn">print</span>(<span class="str">"\\n--- Efeito de remoção (Markov) ---"</span>)
+<span class="fn">print</span>(removal_eff.sort_values(<span class="str">'removal_effects'</span>, ascending=<span class="kw">False</span>).to_string(index=<span class="kw">False</span>))`
+  });
+
+  // 6. Cross-platform (condicional)
+  if (hasApp && hasWeb) scripts.push({
+    name: '6. Análise cross-platform web vs. app (Jatoolbox)',
+    pilar: 'Identidade',
+    code: `<span class="cm"># Identifica canais mobile e web com Jatoolbox translate_tp</span>
+<span class="cm"># Adapte o dicionário conforme os canais reais da base</span>
+plat_dict = {
+    <span class="str">'Mídia Performance'</span>: <span class="str">'web'</span>, <span class="str">'Orgânico'</span>: <span class="str">'web'</span>,
+    <span class="str">'CRM'</span>: <span class="str">'web'</span>,           <span class="str">'Direto'</span>: <span class="str">'web'</span>,
+    <span class="str">'Mídia Social Paga'</span>: <span class="str">'ambos'</span>,  <span class="cm"># aparece nos dois</span>
+    <span class="str">'Afiliados'</span>: <span class="str">'web'</span>,
+    <span class="cm"># adicione canais de app conforme MMP</span>
+}
+
+<span class="cm"># Traduz jornada para perspectiva de plataforma</span>
+df[<span class="str">'jornada_plat'</span>] = df[<span class="str">'jornada'</span>].apply(
+    <span class="kw">lambda</span> j: an.<span class="fn">translate_tp</span>(j, translation_dict=plat_dict, separator=<span class="str">' > '</span>)
+)
+
+<span class="cm"># Jornadas com ambas plataformas</span>
+cross = df[df[<span class="str">'jornada_plat'</span>].<span class="fn">str.contains</span>(<span class="str">'ambos'</span>, na=<span class="kw">False</span>)]
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"Jornadas cross-platform: {len(cross):,} ({len(cross)/len(df):.1%})"</span>)
+<span class="fn">print</span>(cross.groupby(<span class="str">'converteu'</span>).agg(
+    total=(<span class="str">'uid'</span>,<span class="str">'count'</span>), tx_conv=(<span class="str">'converteu'</span>,<span class="str">'mean'</span>)
+))`
+  });
+
+  // 7. Sobreposição brand search (condicional)
+  if (hasOverlap) scripts.push({
+    name: '7. Análise de sobreposição de audiência (Jatoolbox)',
+    pilar: 'Atribuição',
+    code: `<span class="cm"># Verifica presença de Brand Search nas jornadas</span>
+<span class="cm"># Adapte 'brand_canal' para o nome do canal de brand search real</span>
+brand_canal = <span class="str">'Mídia Performance'</span>  <span class="cm"># ou 'Brand Search' conforme agrupamento</span>
+
+df[<span class="str">'tem_brand'</span>] = df[<span class="str">'jornada'</span>].apply(
+    <span class="kw">lambda</span> j: an.<span class="fn">check_tp</span>(j, tp_to_check=brand_canal, separator=<span class="str">' > '</span>)
+)
+df[<span class="str">'brand_last'</span>] = df[<span class="str">'ultimo_tp'</span>] == brand_canal
+
+<span class="cm"># Frequência como last touch em conversoras</span>
+conv = df[df[<span class="str">'converteu'</span>]==<span class="num">1</span>]
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"Brand em algum touchpoint: {conv['tem_brand'].mean():.1%}"</span>)
+<span class="fn">print</span>(<span class="fn">f</span><span class="str">"Brand como last touch    : {conv['brand_last'].mean():.1%}"</span>)
+
+<span class="cm"># Jornadas sem brand — qual canal converte?</span>
+sem_brand = conv[~conv[<span class="str">'tem_brand'</span>]]
+<span class="fn">print</span>(<span class="str">"\\nLast touch sem brand:"</span>)
+<span class="fn">print</span>(sem_brand[<span class="str">'ultimo_tp'</span>].value_counts().head(<span class="num">8</span>))`
+  });
+
+  el.innerHTML = scripts.map(s => `
+    <div style="border-bottom:1px solid var(--ds-border);">
+      <div style="padding:9px 14px;background:var(--ds-bg);border-bottom:1px solid var(--ds-border);display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+        <div>
+          <div style="font-size:11px;font-weight:800;color:var(--ds);">${s.name}</div>
+          <div style="font-size:10px;color:var(--ds);opacity:.7;">Pilar: ${s.pilar}</div>
+        </div>
+        <button class="query-copy-btn" style="color:var(--ds);border-color:var(--ds-border);" onclick="copyQuery(this)">📋 Copiar</button>
+      </div>
+      <div class="query-code" data-raw="${encodeURIComponent(s.code.replace(/<[^>]+>/g,''))}">${s.code}</div>
+    </div>`).join('');
+}
+
+// ===============================================
+// SOT QUERY — Base de Jornadas (parametrizada)
+// ===============================================
+function buildSotQuery() {
+  const el = document.getElementById('e4-sot-wrap');
+  if (!el) return;
+
+  const p       = getProjectParams();
+  const convEvt = v('f-conv-evt') || 'NOME_EVENTO';
+  const canal   = chipsOn('chips-canal');
+
+  // Monta CASE WHEN a partir dos canais ativos
+  const cases = [];
+  cases.push(`      <span class="kw">WHEN</span> ts.source = <span class="str">'(direct)'</span> <span class="kw">AND</span> ts.medium <span class="kw">IN</span> (<span class="str">'(none)'</span>, <span class="str">'(not set)'</span>) <span class="kw">THEN</span> <span class="str">'Direto'</span>`);
+  cases.push(`      <span class="kw">WHEN</span> ts.medium = <span class="str">'organic'</span> <span class="kw">THEN</span> <span class="str">'Orgânico'</span>`);
+  if (canal.some(c => c.includes('Google')))  cases.push(`      <span class="kw">WHEN</span> ts.medium <span class="kw">IN</span> (<span class="str">'cpc'</span>, <span class="str">'paid_search'</span>) <span class="kw">THEN</span> <span class="str">'Mídia Performance'</span>`);
+  if (canal.some(c => c.includes('Meta')))    cases.push(`      <span class="kw">WHEN</span> ts.medium <span class="kw">IN</span> (<span class="str">'paid_social'</span>, <span class="str">'cpm'</span>) <span class="kw">THEN</span> <span class="str">'Mídia Social Paga'</span>`);
+  if (canal.some(c => c.includes('YouTube') || c.includes('Display'))) cases.push(`      <span class="kw">WHEN</span> ts.medium <span class="kw">IN</span> (<span class="str">'display'</span>, <span class="str">'video'</span>, <span class="str">'awareness'</span>) <span class="kw">THEN</span> <span class="str">'Mídia Awareness'</span>`);
+  if (canal.some(c => c.includes('CRM')))     cases.push(`      <span class="kw">WHEN</span> ts.medium <span class="kw">IN</span> (<span class="str">'email'</span>, <span class="str">'push'</span>) <span class="kw">THEN</span> <span class="str">'CRM'</span>`);
+  if (canal.some(c => c.includes('Afiliados'))) cases.push(`      <span class="kw">WHEN</span> ts.medium <span class="kw">IN</span> (<span class="str">'affiliate'</span>, <span class="str">'referral'</span>) <span class="kw">THEN</span> <span class="str">'Afiliados'</span>`);
+  if (canal.some(c => c.includes('TikTok')))  cases.push(`      <span class="kw">WHEN</span> ts.source = <span class="str">'tiktok'</span> <span class="kw">THEN</span> <span class="str">'TikTok'</span>`);
+  cases.push(`      <span class="kw">ELSE</span> <span class="str">'Não identificado'</span>`);
+
+  const caseWhen = cases.join('\n');
+  const tbl = `\`${p.proj}.${p.ga4}.events_*\``;
+
+  const rawCode = `-- ══ BASE DE JORNADAS MTA — ${p.proj} ══
+-- Evento de conversão : ${convEvt}
+-- Lookback window     : ${p.lw} dias
+-- Ajuste DATA_INICIO e DATA_FIM antes de executar
+
+WITH
+-- 1. Eventos brutos com canal agrupado
+eventos AS (
+  SELECT
+    COALESCE(user_id, user_pseudo_id)   AS uid,
+    event_timestamp,
+    event_date,
+    CASE
+${cases.map(c => c.replace(/<[^>]+>/g,'')).join('\n')}
+    END                                 AS canal,
+    IF(event_name = '${convEvt}', 1, 0) AS is_conversao
+  FROM ${tbl.replace(/`/g,'`')}
+  WHERE _TABLE_SUFFIX BETWEEN 'DATA_INICIO' AND 'DATA_FIM'
+    AND event_name IN ('session_start', '${convEvt}')
+    AND COALESCE(user_id, user_pseudo_id) IS NOT NULL
+),
+
+-- 2. 1ª conversão por usuário no período
+conversoes AS (
+  SELECT uid,
+    MIN(event_timestamp) AS ts_conversao,
+    MIN(event_date)      AS data_conversao
+  FROM eventos WHERE is_conversao = 1
+  GROUP BY uid
+),
+
+-- 3. Touchpoints dentro da lookback window
+touchpoints AS (
+  SELECT e.uid, e.canal, e.event_timestamp, e.event_date,
+    c.ts_conversao, c.data_conversao
+  FROM eventos e
+  INNER JOIN conversoes c USING(uid)
+  WHERE e.is_conversao = 0
+    AND e.event_timestamp < c.ts_conversao
+    AND e.event_timestamp >= c.ts_conversao - (${p.lw} * 86400 * 1000000)
+),
+
+-- 4. Jornadas conversoras
+jornadas_conv AS (
+  SELECT
+    uid,
+    STRING_AGG(canal, ' > ' ORDER BY event_timestamp) AS jornada,
+    COUNT(*)                                           AS n_touchpoints,
+    MIN(event_date)                                    AS dt_primeiro_tp,
+    MAX(data_conversao)                                AS dt_conversao,
+    DATE_DIFF(MAX(data_conversao), MIN(event_date), DAY) AS duracao_dias,
+    1                                                  AS converteu
+  FROM touchpoints
+  GROUP BY uid
+),
+
+-- 5. Jornadas não conversoras
+jornadas_nao_conv AS (
+  SELECT
+    uid,
+    STRING_AGG(canal, ' > ' ORDER BY event_timestamp) AS jornada,
+    COUNT(*)                                           AS n_touchpoints,
+    MIN(event_date)                                    AS dt_primeiro_tp,
+    CAST(NULL AS DATE)                                 AS dt_conversao,
+    CAST(NULL AS INT64)                                AS duracao_dias,
+    0                                                  AS converteu
+  FROM (
+    SELECT e.* FROM eventos e
+    WHERE e.is_conversao = 0
+      AND e.uid NOT IN (SELECT uid FROM conversoes)
+  )
+  GROUP BY uid
+)
+
+-- 6. Base final
+SELECT * FROM jornadas_conv
+UNION ALL
+SELECT * FROM jornadas_nao_conv WHERE n_touchpoints > 0
+ORDER BY converteu DESC, dt_conversao DESC`;
+
+  const highlightedCode = `<span class="cm">-- ══ BASE DE JORNADAS MTA — ${p.proj} ══</span>
+<span class="cm">-- Evento de conversão : ${convEvt}  |  Lookback: ${p.lw} dias</span>
+<span class="cm">-- Ajuste DATA_INICIO e DATA_FIM antes de executar</span>
+
+<span class="kw">WITH</span>
+<span class="cm">-- 1. Eventos brutos com canal agrupado</span>
+eventos <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    <span class="fn">COALESCE</span>(user_id, user_pseudo_id)           <span class="kw">AS</span> uid,
+    event_timestamp, event_date,
+    <span class="kw">CASE</span>
+${caseWhen}
+    <span class="kw">END</span>                                         <span class="kw">AS</span> canal,
+    <span class="fn">IF</span>(event_name = <span class="str">'${convEvt}'</span>, <span class="num">1</span>, <span class="num">0</span>)        <span class="kw">AS</span> is_conversao
+  <span class="kw">FROM</span> <span class="str">\`${p.proj}.${p.ga4}.events_*\`</span>
+  <span class="kw">WHERE</span> _TABLE_SUFFIX <span class="kw">BETWEEN</span> <span class="str">'DATA_INICIO'</span> <span class="kw">AND</span> <span class="str">'DATA_FIM'</span>
+    <span class="kw">AND</span> event_name <span class="kw">IN</span> (<span class="str">'session_start'</span>, <span class="str">'${convEvt}'</span>)
+    <span class="kw">AND</span> <span class="fn">COALESCE</span>(user_id, user_pseudo_id) <span class="kw">IS NOT NULL</span>
+),
+
+<span class="cm">-- 2. 1ª conversão por usuário</span>
+conversoes <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> uid,
+    <span class="fn">MIN</span>(event_timestamp) <span class="kw">AS</span> ts_conversao,
+    <span class="fn">MIN</span>(event_date)      <span class="kw">AS</span> data_conversao
+  <span class="kw">FROM</span> eventos <span class="kw">WHERE</span> is_conversao = <span class="num">1</span>
+  <span class="kw">GROUP BY</span> uid
+),
+
+<span class="cm">-- 3. Touchpoints dentro da lookback (${p.lw} dias)</span>
+touchpoints <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> e.uid, e.canal, e.event_timestamp, e.event_date,
+    c.ts_conversao, c.data_conversao
+  <span class="kw">FROM</span> eventos e
+  <span class="kw">INNER JOIN</span> conversoes c <span class="kw">USING</span>(uid)
+  <span class="kw">WHERE</span> e.is_conversao = <span class="num">0</span>
+    <span class="kw">AND</span> e.event_timestamp < c.ts_conversao
+    <span class="kw">AND</span> e.event_timestamp >= c.ts_conversao - (<span class="num">${p.lw}</span> * <span class="num">86400</span> * <span class="num">1000000</span>)
+),
+
+<span class="cm">-- 4. Jornadas conversoras</span>
+jornadas_conv <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> uid,
+    <span class="fn">STRING_AGG</span>(canal, <span class="str">' > '</span> <span class="kw">ORDER BY</span> event_timestamp) <span class="kw">AS</span> jornada,
+    <span class="fn">COUNT</span>(*) <span class="kw">AS</span> n_touchpoints,
+    <span class="fn">MIN</span>(event_date)     <span class="kw">AS</span> dt_primeiro_tp,
+    <span class="fn">MAX</span>(data_conversao) <span class="kw">AS</span> dt_conversao,
+    <span class="fn">DATE_DIFF</span>(<span class="fn">MAX</span>(data_conversao), <span class="fn">MIN</span>(event_date), <span class="kw">DAY</span>) <span class="kw">AS</span> duracao_dias,
+    <span class="num">1</span> <span class="kw">AS</span> converteu
+  <span class="kw">FROM</span> touchpoints <span class="kw">GROUP BY</span> uid
+),
+
+<span class="cm">-- 5. Jornadas não conversoras</span>
+jornadas_nao_conv <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> uid,
+    <span class="fn">STRING_AGG</span>(canal, <span class="str">' > '</span> <span class="kw">ORDER BY</span> event_timestamp) <span class="kw">AS</span> jornada,
+    <span class="fn">COUNT</span>(*) <span class="kw">AS</span> n_touchpoints,
+    <span class="fn">MIN</span>(event_date)          <span class="kw">AS</span> dt_primeiro_tp,
+    <span class="kw">CAST</span>(<span class="kw">NULL AS</span> DATE)       <span class="kw">AS</span> dt_conversao,
+    <span class="kw">CAST</span>(<span class="kw">NULL AS</span> INT64)      <span class="kw">AS</span> duracao_dias,
+    <span class="num">0</span>                        <span class="kw">AS</span> converteu
+  <span class="kw">FROM</span> (<span class="kw">SELECT</span> e.* <span class="kw">FROM</span> eventos e
+        <span class="kw">WHERE</span> e.is_conversao = <span class="num">0</span>
+          <span class="kw">AND</span> e.uid <span class="kw">NOT IN</span> (<span class="kw">SELECT</span> uid <span class="kw">FROM</span> conversoes))
+  <span class="kw">GROUP BY</span> uid
+)
+
+<span class="cm">-- 6. Base final</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> jornadas_conv
+<span class="kw">UNION ALL</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> jornadas_nao_conv <span class="kw">WHERE</span> n_touchpoints > <span class="num">0</span>
+<span class="kw">ORDER BY</span> converteu <span class="kw">DESC</span>, dt_conversao <span class="kw">DESC</span>`;
+
+  el.innerHTML = `
+    <div class="query-block">
+      <div class="query-head">
+        <div class="query-head-info">
+          <div class="query-name">🏗️ SOT — Base de Jornadas MTA</div>
+          <div class="query-desc">Query completa e parametrizada — pronta para rodar no BigQuery</div>
+        </div>
+        <button class="query-copy-btn" onclick="copyQuery(this)">📋 Copiar</button>
+      </div>
+      <div class="query-code" style="max-height:420px;overflow-y:auto;" data-raw="${encodeURIComponent(rawCode)}">${highlightedCode}</div>
+    </div>`;
 }
 
 // ===============================================
@@ -2031,7 +3187,9 @@ function buildStage4() {
     { t: 'Versionar notebooks no GitHub (organizado, comentado, reproduzível)', auto: false },
   ];
 
-  const qInputs = [...document.querySelectorAll('#q-list .q-input')].map(i => i.value.trim()).filter(Boolean);
+  const qInputsAuto   = [...document.querySelectorAll('#q-auto-list .q-auto-text')].map(el => el.textContent.trim());
+  const qInputsManual = [...document.querySelectorAll('#q-manual-list .q-input')].map(i => i.value.trim()).filter(Boolean);
+  const qInputs = [...qInputsAuto, ...qInputsManual];
   const baTasks = [
     ...qInputs.map(q => ({ t: `Responder: "${q}"`, auto: true, reason: 'Pergunta registrada na Etapa 1' })),
     { t: 'Estruturar storytelling: papel de cada canal (Introdutor / Engajador / Conversor)', auto: false },
@@ -2054,6 +3212,7 @@ function buildStage4() {
   renderList(deTasks, 'e4-de', 'auto-de');
   renderList(dsTasks, 'e4-ds', 'auto-ds');
   renderList(baTasks, 'e4-ba', 'auto-ba');
+  buildSotQuery();
   updateProgress4();
 }
 
@@ -2093,12 +3252,13 @@ function selModel(el) {
 }
 
 function addQ() {
-  const list = document.getElementById('q-list');
+  const list = document.getElementById('q-manual-list');
   const n = list.children.length + 1;
   const div = document.createElement('div');
   div.className = 'q-row';
-  div.innerHTML = `<div class="q-num">${n}</div><input class="q-input" type="text" placeholder="Digite a pergunta do cliente..." oninput="onInput()" style="flex:1;border:none;border-radius:0;padding:0;background:transparent;box-shadow:none;font-size:13px;color:var(--text);">`;
+  div.innerHTML = `<div class="q-num">${n}</div><input class="q-input" type="text" placeholder="Digite a pergunta personalizada..." oninput="onInput()" style="flex:1;border:none;border-radius:0;padding:0;background:transparent;box-shadow:none;font-size:13px;color:var(--text);">`;
   list.appendChild(div);
+  list.querySelector('.q-input:last-of-type')?.focus();
 }
 
 // ===============================================
@@ -2658,7 +3818,7 @@ async function salvarProjetoNoSheets() {
   }
 }
 
-onInput();
+restoreState();
 </script>
 </body>
 </html>
