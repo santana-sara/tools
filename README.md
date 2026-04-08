@@ -154,6 +154,34 @@ A ferramenta gera conteúdo dinamicamente com base nas escolhas da Etapa 1:
 
 ---
 
+## 🚀 Integração com martech-toolkit
+
+A seção **"Configuração de Ambiente — Pipeline Dataform"** na Etapa 1 conecta o planejamento diretamente ao pipeline de dados da empresa.
+
+Com base nas respostas das entrevistas, a ferramenta gera automaticamente os arquivos do [martech-toolkit](../martech-toolkit-v9-main/) prontos para deploy:
+
+| Arquivo gerado | O que é |
+|---|---|
+| `workflow_settings.yaml` | Variáveis do Dataform com datasets e parâmetros do cliente |
+| `definitions/REFINED/DM_GOLD_MARKETING_PERFORMANCE.sqlx` | Tabela Gold de performance com o **evento de conversão real** do cliente substituído |
+| `definitions/REFINED/DM_GOLD_RETAIL_CUBE.sqlx` | Cubo de Retail Media parametrizado |
+| `definitions/TRUSTED/FT_SIL_GA4_EVENTS.sqlx` | Tabela Silver de eventos GA4 |
+| `definitions/TRUSTED/FT_SIL_ADS_PERFORMANCE.sqlx` | Tabela Silver de performance de Ads |
+| `includes/data.js` | Módulo de variáveis com todos os parâmetros do cliente |
+
+### Como usar
+
+1. Preencha a **Etapa 1** (canais, cliente, configuração BigQuery)
+2. Na **Etapa 3**, preencha o evento de conversão GA4 (ex: `generate_lead`, `purchase`)
+3. Abra o card **"Configuração de Ambiente — Pipeline Dataform"** na Etapa 1
+4. Revise os arquivos gerados nos previews
+5. Clique em **"Download Pacote ZIP"**
+6. Extraia o ZIP na pasta do `martech-toolkit` e execute o `deploy.sh`
+
+> O DE sai da entrevista com o pacote de deploy em mãos, sem precisar editar arquivos manualmente.
+
+---
+
 ## 🔧 Referências técnicas
 
 - **Infraestrutura de dados:** Google BigQuery (GA4 export)
